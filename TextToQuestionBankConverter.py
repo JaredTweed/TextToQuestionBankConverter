@@ -7,6 +7,7 @@ import glob
 import zipfile
 import os
 import sys
+import shutil
 
 def write_time(root):
   """
@@ -25,7 +26,7 @@ def add_zip_to_name(zip_name):
   Add the current time and a unique number to the given zip file name if a file with the same name already exists.
   """
   if(os.path.exists(f'{zip_name}.zip')):
-    time = datetime.datetime.utcnow().strftime('%Y-%m-%d_%H-%M')
+    time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M')
 
     if(os.path.exists(f'{zip_name}_{time}.zip')):
       file_iteration = 1
@@ -57,8 +58,9 @@ def text_to_xml_error_check(text_file):
   with open(text_file, 'r') as f:
     file = f.read()
 
-  #QuestionList
+  # Question List
   numQuestions = len(re.findall(r'[^\s]+\s*\n+\s*\n+\s*[^\s]+', file))+1
+  error = False
   
   lines = open(text_file, 'r')
   for i in range(numQuestions):
@@ -66,31 +68,48 @@ def text_to_xml_error_check(text_file):
     while(thisLine.isspace() or (thisLine.lower().startswith('mc') and thisLine[2:].isspace())):
       thisLine = lines.readline()
 
-    #Question
+    # Scan the question for errors
     root = ET.Element('POOL')
     currentQ = ET.SubElement(root, 'QUESTION_MULTIPLECHOICE')
     body = ET.SubElement(currentQ, 'BODY')
     questionText = ET.SubElement(body, 'TEXT')
     questionText.text = thisLine.strip()
     
-    #Answer
+    # Scan the answers for errors
     a=0
     answerSelected = False
+    multipleAnswersSelected = False 
     thisLine = lines.readline()
     while(not thisLine.isspace()):
       a += 1
       thisLine = thisLine.strip()
       if(thisLine.startswith('*')):
+        if(answerSelected):
+          multipleAnswersSelected = True
         correct = a
         answerSelected = True
       thisLine = lines.readline()
-      
-    #Gradable
-    if(not answerSelected):
-      print('No answer is selected for question {}:'.format(i+1))
-      print(questionText.text)
-      input('Hit \'Enter\' to exit. Fix input text to create output.')
-      sys.exit()
+
+    # Print error
+    if (a == 0 or a == 1 or (not answerSelected) or multipleAnswersSelected or questionText.text.startswith('*')):
+      if(a == 0):
+        print('No answer options were provided for question {}.'.format(i+1))
+      if(a == 1):
+        print('Only one answer option was provided for question {}.'.format(i+1))
+      if(not answerSelected):
+        print('No answer is selected for question {}.'.format(i+1))
+      if(multipleAnswersSelected):
+        print('Multiple answers are selected for question {}.'.format(i+1))
+      if(questionText.text.startswith('*')):
+        print("WARNING: Question {} begins with a '*' character.".format(i+1))
+      print('\n Question {}: '.format(i+1) + questionText.text + '\n\n')
+      error = True
+
+  # Quit program
+  if(error):
+    print("Output file will not be produced. Fix input text and try again.")
+    input("Hit 'Enter' to exit.")
+    sys.exit()
 
 
 def text_to_xml(text_file, xml_file, quiz_name):
@@ -121,7 +140,7 @@ def text_to_xml(text_file, xml_file, quiz_name):
   text.text = 'Created by the Blackboard Quiz Generator'
   write_time(root)
 
-  #QuestionList
+  # Question List
   qList = ET.SubElement(root, 'QUESTIONLIST')
   for i in range(numQuestions):
     q = ET.SubElement(qList, 'QUESTION')
@@ -196,7 +215,7 @@ def text_to_xml(text_file, xml_file, quiz_name):
 
 
 
-# Main
+# Main Code
 
 # Assign the input file to 'text_file'
 text_file = glob.glob('convert *.txt')
@@ -223,20 +242,20 @@ QuizName = input("Enter the name of your quiz: ")
 # Check if a zip file with the same name already exists
 x = 'q'
 if(os.path.exists(f'{QuizName}.zip')):
-  print("Because the zip file already exists, the new one will have the new")
-  print("name appended to the end of its title. Press 'Enter' to accept. If")
-  x = input("you wish to replace the current instead, type 'r' then hit 'Enter'.\n")
+  print("Because a zip file with that name already exists, the new output file")
+  print("will have the same name with the date and time appended to the end of")
+  print("its title. Press 'Enter' to accept. If you wish to replace the prior")
+  x = input("output file instead, type 'r' then hit 'Enter'.\n\n")
 
 # Create zipped files
 text_to_xml(text_file, 'res00001.dat', QuizName)
 create_manifest()
 
 # Zip the XML and manifest files into a folder with a proper name
-if(x.lower == 'r'):
+if(x.lower() == 'r'):
   zipFileName = f'{QuizName}.zip'
 else:
   zipFileName = add_zip_to_name(QuizName)
-  
 with zipfile.ZipFile(zipFileName, 'w') as zip:
   zip.write('imsmanifest.xml')
   zip.write('res00001.dat')
@@ -250,6 +269,24 @@ except OSError:
 
 # renames input file
 new_name = 'converted ' + text_file[8:]
-os.rename(text_file, new_name)
-
-
+if(os.path.exists(new_name)):
+  print(f"The input file\n'{new_name}'\nalready has a converted file with the same name. Type 'r' then hit 'Enter'")
+  print("if you wish to replace it. Otherwise hit 'Enter', and the input text")
+  r = input("file will have its time and date appended to the end of its name.\n\n")
+  #print(f'THIS IS R: {r}, and it is {type(r)}')
+  if(r.lower() == 'r'):
+    try:
+      os.remove(new_name)
+    except OSError:
+      pass    
+  else:
+    time_now = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M')
+    new_name = f'{new_name[:-4]}_{time_now}.txt'
+try:
+  shutil.copy(text_file, new_name)
+  os.remove(text_file)
+except:
+  print("ERROR. Could not rename input text file because it is being")
+  print("used somewhere else (likely in a terminal or in another instance")
+  print("of this program). Instead another copy of the input text file")
+  input("was made and renamed. Please delete original copy manually.")
