@@ -222,11 +222,11 @@ text_file = glob.glob('convert *.txt')
 
 # Check for errors
 if len(text_file) > 1:
-  print('ERROR, more than 1 convert file')
-  print('Below are the given convert files')
+  print('ERROR, more than 1 convert file.')
+  print('Below are the given convert files.')
   for i in text_file:
     print(i)
-  input('ERROR, more than 1 convert file')
+  input('ERROR, more than 1 convert file.')
   sys.exit()
 elif len(text_file) == 0:
   print("ERROR. No file to convert. The program converts any '.txt' file in the")
@@ -237,8 +237,25 @@ else:
 text_to_xml_error_check(text_file)
 
 # Get the quiz name from the user
+print("Note, file names cannot include any of the following characters:\n  \/:*?\"<>|")
 QuizName = input("Enter the name of your quiz: ")
 
+# Check if any character in QuizName is in \/:*?"<>|
+c = ':'
+nameIsValid = True
+for char in QuizName:
+  if char in "\/:*?\"<>|":
+    nameIsValid = False
+    c = char
+while(not nameIsValid):
+  print(f"'{c}' is not allowed in a file name.")
+  QuizName = input("Enter a valid name for your quiz: ")
+  nameIsValid = True
+  for char in QuizName:
+    if char in "\/:*?\"<>|":
+      nameIsValid = False
+      c = char
+      
 # Check if a zip file with the same name already exists
 x = 'q'
 if(os.path.exists(f'{QuizName}.zip')):
