@@ -290,7 +290,6 @@ if(os.path.exists(new_name)):
   print(f"The input file\n'{new_name}'\nalready has a converted file with the same name. Type 'r' then hit 'Enter'")
   print("if you wish to replace it. Otherwise hit 'Enter', and the input text")
   r = input("file will have its time and date appended to the end of its name.\n\n")
-  #print(f'THIS IS R: {r}, and it is {type(r)}')
   if(r.lower() == 'r'):
     try:
       os.remove(new_name)
