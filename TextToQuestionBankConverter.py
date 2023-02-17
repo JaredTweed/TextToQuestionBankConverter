@@ -80,7 +80,7 @@ def text_to_xml_error_check(text_file):
     answerSelected = False
     multipleAnswersSelected = False 
     thisLine = lines.readline()
-    while(not thisLine.isspace()):
+    while((not thisLine.isspace()) and thisLine != ''):
       a += 1
       thisLine = thisLine.strip()
       if(thisLine.startswith('*')):
