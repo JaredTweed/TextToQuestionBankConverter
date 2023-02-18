@@ -174,7 +174,7 @@ def text_to_xml(text_file, xml_file, quiz_name):
     a=0
     answerSelected = False
     thisLine = lines.readline()
-    while(not thisLine.isspace()):
+    while((not thisLine.isspace()) and thisLine != ''):
       a += 1
       
       answer = ET.SubElement(currentQ, 'ANSWER')
