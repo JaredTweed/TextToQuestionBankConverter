@@ -9,11 +9,6 @@ Parkinson's law
 The Peter Principle  
 \*Belief bias  
 
-<html>&#42;<\html>
-<html>\u002A<\html>
-&#42;
-\u002A
-
 Which of the following is explicitly making a claim about cause?  
 \*If you learn to manage your stress, that will make you more likely to get promoted to a management position  
 People who supervise more people at work tend to have lower levels of stress  
