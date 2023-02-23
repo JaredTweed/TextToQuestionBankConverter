@@ -65,7 +65,7 @@ def text_to_xml_error_check(string):
   Check the given text file for errors and exit if any are found.
   """
   # Question List
-  numQuestions = len(re.findall(r'[^\s]+\s*\n+\s*\n+\s*[^\s]+', string))+1
+  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*[^\s]+?', string))+1
   error = False
 
   error_screen.configure(state="normal")
@@ -103,27 +103,20 @@ def text_to_xml_error_check(string):
     if (a == 0 or a == 1 or (not answerSelected) or multipleAnswersSelected or questionText.text.startswith('*')):
       if(a == 0):
         error_screen.insert("end", 'No answer options were provided for question {}.\n'.format(i+1))
-        print('No answer options were provided for question {}.'.format(i+1))
       if(a == 1):
         error_screen.insert("end", 'Only one answer option was provided for question {}.\n'.format(i+1))
-        print('Only one answer option was provided for question {}.'.format(i+1))
       if(not answerSelected):
         error_screen.insert("end", 'No answer is selected for question {}.\n'.format(i+1))
-        print('No answer is selected for question {}.'.format(i+1))
       if(multipleAnswersSelected):
         error_screen.insert("end", 'Multiple answers are selected for question {}.\n'.format(i+1))
-        print('Multiple answers are selected for question {}.'.format(i+1))
       if(questionText.text.startswith('*')):
         error_screen.insert("end", "WARNING: Question {} begins with a '*' character.\n".format(i+1))
-        print("WARNING: Question {} begins with a '*' character.".format(i+1))
       error_screen.insert("end", '\n Question {}: '.format(i+1) + questionText.text + '\n\n\n')
-      print('\n Question {}: '.format(i+1) + questionText.text + '\n\n')
       error = True
 
   # Quit program
   if(error):
     error_screen.insert("end", "Output file will not be produced. Fix input text and try again.\n")
-    print("Output file will not be produced. Fix input text and try again.")
 
   error_screen.configure(state="disabled")
   
@@ -146,7 +139,7 @@ def text_to_xml(text_file, xml_file, quiz_name):
   with open(text_file, 'r') as f:
     file = f.read()
 
-  numQuestions = len(re.findall(r'[^\s]+\s*\n+\s*\n+\s*[^\s]+', file))+1
+  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*[^\s]+?', file))+1
     
   # Create the root element
   root = ET.Element('POOL')
@@ -405,38 +398,31 @@ def update_linenumbers(event):
   root.after(1, _update_linenumbers)
 
 def _update_linenumbers():
+  
   i = textbox.index(tk.INSERT)
   cursor_pos = textbox.index("insert")
   line_num = cursor_pos.split('.')[0]
-  linenumbers.configure(text=f"Line number: {line_num}")
+
+  cursor_index = textbox.index("insert")
+  cursor_index = "{}.{}".format(cursor_index.split('.')[0], str(int(cursor_index.split('.')[1])+1))
+  string = textbox.get("1.0",cursor_index)
+  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*[^\s]+?', string))+1
   
-##  linenumbers.configure(state="normal")
-##  linenumbers.delete("1.0", "end")
-##  i = textbox.index("@0,0")
-##  while True:
-##    dline = textbox.dlineinfo(i)
-##    if dline is None:
-##      break
-##    linenumbers.see(textbox.index(tk.INSERT))
-##    y = dline[1]
-##    linenum = str(i).split(".")[0]
-##    linenumbers.insert("end", linenum+"\n")
-##    i = textbox.index("%s+1line" % i)
-##  linenumbers.configure(state="disabled")
+  linenumbers.configure(text=f"Line Number: {line_num}\nQuestion Number: {numQuestions}")
 
 # Main Code
 
 root = customtkinter.CTk()
-root.geometry("900x400")
+root.geometry("920x400")
 root.resizable(True, True)
-root.minsize(900, 400)
+root.minsize(920, 400)
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("green")
 
 root.grid_rowconfigure((0), weight=0)
 root.grid_rowconfigure((2), weight=2)
-root.grid_columnconfigure(2, weight=1)
-root.grid_columnconfigure(3, weight=2, minsize=310)
+root.grid_columnconfigure(1, weight=1, minsize=240)
+root.grid_columnconfigure(3, minsize=310)
 
 root.bind('<Control-s>', save_text_to_file)
 
@@ -444,7 +430,7 @@ title = Label(master=root, text="Text To Question Bank Converter", fg="white", b
 title.grid(row=0, column=0, padx=10, pady=10, sticky="n", columnspan = 3)
 
 quizName = customtkinter.CTkEntry(root, placeholder_text="Quiz Name", font=("Bahnschrift", 20),width=300,height=30,border_width=1,corner_radius=10)
-quizName.grid(row=1, column=0, padx=(10, 2), pady=5, sticky="e", columnspan = 2)
+quizName.grid(row=1, column=0, padx=(10, 2), pady=5, sticky="ew", columnspan = 2)
 quizName.bind('<Control-BackSpace>', entry_ctrl_backspace)
 
 quizNameConstraints = Label(master=root, text="Note, file names cannot include any of\n the following characters:\t  \ /:*?\"<>|", fg="white", background="#222325", font=("Bahnschrift", 10))
@@ -468,13 +454,13 @@ error_screen.insert("end", "Error explanations for the input text will go here i
 error_screen.configure(state="disabled")
 
 linenumbers = Label(master=root, text="Line Number: 1\nQuestion Number: 1", fg="white", background="#222325", font=("Bahnschrift", 10), anchor="w")
-linenumbers.grid(row=3, column=0, sticky="sw", padx=(10,2), pady=10, columnspan = 1)
+linenumbers.grid(row=3, column=0, sticky="ew", padx=(10,2), pady=10, columnspan = 1)
 
 saveTxtButton = customtkinter.CTkButton(master=root, text="Save Textbox As Textfile", width=250, font=("Bahnschrift", 20), command=save_text_to_file)
-saveTxtButton.grid(row=3, column=1, sticky="se", padx=(2,2), pady=10, columnspan = 1)
+saveTxtButton.grid(row=3, column=1, sticky="ew", padx=(2,2), pady=10, columnspan = 1)
 
-questionBankButton = customtkinter.CTkButton(master=root, text="Create Question Bank", width=300, font=("Bahnschrift", 20), command=convert)
-questionBankButton.grid(row=3, column=2, sticky="sw", padx=(2,10), pady=10, columnspan = 1)
+questionBankButton = customtkinter.CTkButton(master=root, text="Create Question Bank", width=100, font=("Bahnschrift", 20), command=convert)
+questionBankButton.grid(row=3, column=2, sticky="ew", padx=(2,5), pady=10, columnspan = 1)
 
 
 root.mainloop()
