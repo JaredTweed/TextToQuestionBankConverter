@@ -107,6 +107,10 @@ def text_to_xml_error_check(string):
 
         textbox.tag_add("start", f"{highlight_start}.0", f"{highlight_end}.0")
         textbox.tag_config("start", background= "dark red", foreground= "white")
+        error_line_numbers.append(f"{highlight_start}.99")
+        
+        print("start tag added: ["+f"{highlight_start}.0"+", "+f"{highlight_end}.0"+"]")
+        
 
   # Quit program
   if(error):
@@ -213,8 +217,11 @@ def text_to_xml(string, xml_file, quiz_name):
 
 def convert():
 
-  for tag in textbox.tag_names():
-    textbox.tag_remove(tag, "1.0", "end")
+  search.instance = 0
+  search.prevPattern = ''
+  search.iteratingQuestions = False
+  error_line_numbers = []
+  textbox.tag_remove("start", "1.0", "end")
   string = textbox.get("1.0", "end")
 
   # Delete error messages from previous conversion attempts
@@ -368,14 +375,14 @@ def open_textfile():
   textbox.insert("1.0", text)
 
 def update_textbox_data(event=None):
-  root.after(1, update_linenumbers)
+  if(textbox.focus_get() == textbox):
+    root.after(1, update_linenumbers)
 
-def update_linenumbers():
-  cursor_pos = textbox.index("insert")
-  line_num = cursor_pos.split('.')[0]
-
-  cursor_index = textbox.index("insert")
-  cursor_index = "{}.{}".format(cursor_index.split('.')[0], str(int(cursor_index.split('.')[1])+1))
+def update_linenumbers(cursor_index=None):
+  if(cursor_index == None):
+    cursor_index = textbox.index("insert")
+    cursor_index = "{}.{}".format(cursor_index.split('.')[0], str(int(cursor_index.split('.')[1])+1))
+  line_num = cursor_index.split('.')[0]
   string = textbox.get("1.0",cursor_index)
   numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*(?=[^\s]+?)', string))+1
   
@@ -444,24 +451,59 @@ def escape_regex(text):
   pattern = '|'.join(re.escape(char) for char in special_chars)
   return re.sub(pattern, lambda match: '\\' + match.group(0), text)
 
+
+def highlight_instance(pattern, instance):
+  textbox.tag_remove("search tag", "1.0", "end")
+  instance_interval = []
+
+  matches = re.finditer(pattern, textbox.get("0.0", "end"), re.IGNORECASE)
+  i = 0
+  if(matches != None):
+    for match in matches:
+      instance_interval.append([match.start(), match.end()])
+      i += 1
+    tkinter_index_start = index_to_ctk(textbox.get("0.0", "end"), instance_interval[instance % i][0])
+    tkinter_index_end = index_to_ctk(textbox.get("0.0", "end"), instance_interval[instance % i][1])
+
+    textbox.see(index_to_ctk(textbox.get("0.0", "end"), instance_interval[instance % i][0]))
+
+    print("search tag added: ["+str(tkinter_index_start)+", "+str(tkinter_index_end)+"]")
+    textbox.tag_add("search tag", tkinter_index_start, tkinter_index_end)
+    textbox.tag_config("search tag", background= "orange", foreground= "white")
+
+    update_linenumbers(tkinter_index_end)
+
+
 def search_text(event):
   root.after(1, _search_text)
 
 def _search_text():
-  index = re.search(escape_regex(search.get()), textbox.get("0.0", "end"), re.IGNORECASE)
-  textbox.tag_remove("search tag", "1.0", "end")
+  search.iteratingQuestions = False
+  pattern = escape_regex(search.get())
+  if(pattern == search.prevPattern):
+    search.instance += 1
+  else:
+    search.instance = 0
+    search.prevPattern = pattern
+  root.after(2, lambda: highlight_instance(pattern, search.instance))
+  textbox.tag_raise("search tag")
 
-  if(index != None):
-    index_start = index.start()
-    index_end = index.end()
-
-    tkinter_index_start = index_to_ctk(textbox.get("0.0", "end"), index_start)
-    tkinter_index_end = index_to_ctk(textbox.get("0.0", "end"), index_end)
-
-    textbox.see(index_to_ctk(textbox.get("0.0", "end"), index_start))
-    
-    textbox.tag_add("search tag", tkinter_index_start, tkinter_index_end)
-    textbox.tag_config("search tag", background= "orange", foreground= "white")
+def iterate_wrong_questions(event):
+  if(len(error_line_numbers) != 0):
+    textbox.tag_remove("search tag", "1.0", "end")
+    if(search.iteratingQuestions == True):
+      search.instance += 1
+    else:
+      search.instance = 0
+      search.iteratingQuestions = True
+      search.prevPattern = ''
+    question_index = error_line_numbers[search.instance % len(error_line_numbers)]
+    print(error_line_numbers)
+    print(search.instance % len(error_line_numbers))
+    print(question_index)
+    textbox.see(question_index)
+    update_linenumbers(question_index)
+    textbox.tag_raise("search tag")
 
 def show_search_entry(event):
   search.grid(row=1, column=3, padx=(2,2), pady=(10,2), sticky="ew")
@@ -471,9 +513,12 @@ def show_search_entry(event):
 def hide_search(event):
   textbox.tag_remove("search tag", "1.0", "end")
   search.grid_forget()
+  update_textbox_data()
 
 
 # Main Code
+
+error_line_numbers = []
 
 root = customtkinter.CTk()
 root.geometry("800x400")
@@ -522,9 +567,12 @@ quizNameConstraints = Label(master=root, text="Quiz names cannot include\n the f
 quizNameConstraints.grid(row=1, column=3, padx=(2,2), pady=(10,2), sticky="w")
 
 search = customtkinter.CTkEntry(root, placeholder_text="Search", font=("Bahnschrift", 20),width=80,height=30,border_width=1,corner_radius=10)
-search.isSearching = True
+search.instance = 0
+search.prevPattern = ''
+search.iteratingQuestions = False
 search.bind("<Return>", search_text)
 search.bind("<FocusOut>", hide_search)
+search.bind("<Control-Return>", iterate_wrong_questions)
 
 # Row 2
 
@@ -561,6 +609,6 @@ openTxtButton = customtkinter.CTkButton(master=root, text="Open Textfile", font=
 openTxtButton.grid(row=4, column=1, sticky="nsew", padx=(2,2), pady=(2,10), columnspan = 1)
 
 questionBankButton = customtkinter.CTkButton(master=root, text="Create Question Bank", width=100, font=("Bahnschrift", 20), command=convert)
-questionBankButton.grid(row=3, column=2, sticky="nsew", padx=(2,5), pady=(2,10), rowspan = 2, columnspan = 2)
+questionBankButton.grid(row=3, column=2, sticky="nsew", padx=(2,2), pady=(2,10), rowspan = 2, columnspan = 2)
 
 root.mainloop()
