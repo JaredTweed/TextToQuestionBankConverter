@@ -376,7 +376,7 @@ def update_linenumbers():
   string = textbox.get("1.0",cursor_index)
   numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*(?=[^\s]+?)', string))+1
   
-  linenumbers.configure(text=f"Line Number: {line_num}\nQuestion Number: {numQuestions}")
+  linenumbers.configure(text=f"Line: {line_num}\nQn: {numQuestions}")
 
 def on_textbox_focusin(event):
   if textbox.get("0.0", "end") == textbox.placeholder+'\n':
@@ -396,7 +396,7 @@ def open_instructions():
 # Main Code
 
 root = customtkinter.CTk()
-root.geometry("1080x400")
+root.geometry("800x400")
 root.resizable(True, True)
 root.minsize(800, 400)
 customtkinter.set_appearance_mode("dark")
@@ -426,7 +426,7 @@ quizName = customtkinter.CTkEntry(root, placeholder_text="Quiz Name", font=("Bah
 quizName.grid(row=1, column=0, padx=(10, 2), pady=(10,2), sticky="ew", columnspan = 3)
 quizName.bind('<Control-BackSpace>', entry_ctrl_backspace)
 
-quizNameConstraints = Label(master=root, text="Note, quiz names cannot include any of\n the following characters:\t  \ /:*?\"<>|", fg="white", background="#222325", font=("Bahnschrift", 10))
+quizNameConstraints = Label(master=root, text="Quiz names cannot include\n the following:\t\ /:*?\"<>|", fg="white", background="#222325", font=("Bahnschrift", 10))
 quizNameConstraints.grid(row=1, column=3, padx=(2,10), pady=(10,2), sticky="w")
 
 # Row 2
@@ -454,7 +454,7 @@ error_screen.configure(state="disabled")
 
 # Row 3 & 4
 
-linenumbers = Label(master=root, text="Line Number: 1\nQuestion Number: 1", fg="white", background="#222325", font=("Bahnschrift", 10), anchor="w")
+linenumbers = Label(master=root, text="Line: 1\nQn: 1", fg="white", background="#222325", font=("Bahnschrift", 20), anchor="w")
 linenumbers.grid(row=3, column=0, sticky="ew", padx=(10,2), pady=(2,10), rowspan = 2, columnspan = 1)
 
 saveTxtButton = customtkinter.CTkButton(master=root, text="Save Textbox As Textfile", width=250, font=("Bahnschrift", 20), command=save_text_to_file)
