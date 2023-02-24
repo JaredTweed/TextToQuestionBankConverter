@@ -286,7 +286,7 @@ def convert():
 
 
 def index_to_ctk(string, index):
-  custom_index = "{}.{}".format(string.count('\n', 0, index) + 1, index - string.rfind('\n', 0, index))
+  custom_index = "{}.{}".format(string.count('\n', 0, index) + 1, index - string.rfind('\n', 0, index)-1) 
   return custom_index
 
 def find_last_regex_match(string):
@@ -325,10 +325,12 @@ def textbox_ctrl_backspace(event):
   index = find_last_regex_match(string)
   
   if index != -1:
+    index += 1
     custom_index = index_to_ctk(string, index)
     ent.delete(custom_index,end_idx)
   else:
     ent.delete("0.0",end_idx)
+  update_textbox_data()
 
 def entry_ctrl_backspace(event):
   ent = event.widget
@@ -342,6 +344,7 @@ def entry_ctrl_backspace(event):
     ent.delete(index,end_idx)
   else:
     ent.delete("0.0",end_idx)
+  update_textbox_data()
 
 def save_text_to_file(event=None):
   # Get the text from the textbox
@@ -364,7 +367,7 @@ def open_textfile():
   textbox.configure(text_color='white')
   textbox.insert("1.0", text)
 
-def update_textbox_data(event):
+def update_textbox_data(event=None):
   root.after(1, update_linenumbers)
 
 def update_linenumbers():
@@ -417,7 +420,6 @@ def fontsize_5(event):
   error_screen.configure(font=("Bahnschrift", size))
 
 def fontsize_6(event):
-  print("222")
   size = 40
   textbox.configure(font=("Bahnschrift", size))
   error_screen.configure(font=("Bahnschrift", size))
@@ -437,6 +439,40 @@ def fontsize_9(event):
   textbox.configure(font=("Bahnschrift", size))
   error_screen.configure(font=("Bahnschrift", size))
 
+def escape_regex(text):
+  special_chars = ['\\', '.', '*', '+', '?', '{', '}', '[', ']', '|', '(', ')', '^', '$']
+  pattern = '|'.join(re.escape(char) for char in special_chars)
+  return re.sub(pattern, lambda match: '\\' + match.group(0), text)
+
+def search_text(event):
+  root.after(1, _search_text)
+
+def _search_text():
+  index = re.search(escape_regex(search.get()), textbox.get("0.0", "end"), re.IGNORECASE)
+  textbox.tag_remove("search tag", "1.0", "end")
+
+  if(index != None):
+    index_start = index.start()
+    index_end = index.end()
+
+    tkinter_index_start = index_to_ctk(textbox.get("0.0", "end"), index_start)
+    tkinter_index_end = index_to_ctk(textbox.get("0.0", "end"), index_end)
+
+    textbox.see(index_to_ctk(textbox.get("0.0", "end"), index_start))
+    
+    textbox.tag_add("search tag", tkinter_index_start, tkinter_index_end)
+    textbox.tag_config("search tag", background= "orange", foreground= "white")
+
+def show_search_entry(event):
+  search.grid(row=1, column=3, padx=(2,2), pady=(10,2), sticky="ew")
+  search.focus()
+  search.select_range("0", "end")
+
+def hide_search(event):
+  textbox.tag_remove("search tag", "1.0", "end")
+  search.grid_forget()
+
+
 # Main Code
 
 root = customtkinter.CTk()
@@ -454,6 +490,7 @@ root.grid_columnconfigure(2, weight=1)
 root.grid_columnconfigure(4, weight=2)
 
 root.bind('<Control-s>', save_text_to_file)
+root.bind('<Control-f>', show_search_entry)
 
 root.bind('<Control-KeyPress-1>', fontsize_1)
 root.bind('<Control-KeyPress-2>', fontsize_2)
@@ -471,8 +508,8 @@ root.bind('<Control-KeyPress-0>', fontsize_1)
 title = Label(master=root, text="Text To Question Bank Converter", fg="white", background="#222325", font=("Bahnschrift", 20))
 title.grid(row=0, column=0, padx=10, pady=10, sticky="n", columnspan = 4)
 
-search = customtkinter.CTkButton(master=root, text="Help", font=("Bahnschrift", 20), command=open_instructions)
-search.grid(row=0, column=4, padx=(2,10), pady=(10,5), sticky="nsew", columnspan = 1)
+help_button = customtkinter.CTkButton(master=root, text="Help", font=("Bahnschrift", 20), command=open_instructions)
+help_button.grid(row=0, column=4, padx=(2,10), pady=(10,5), sticky="nsew", columnspan = 1)
 
 
 # Row 1
@@ -482,7 +519,12 @@ quizName.grid(row=1, column=0, padx=(10, 2), pady=(10,2), sticky="ew", columnspa
 quizName.bind('<Control-BackSpace>', entry_ctrl_backspace)
 
 quizNameConstraints = Label(master=root, text="Quiz names cannot include\n the following:\t\ /:*?\"<>|", fg="white", background="#222325", font=("Bahnschrift", 10))
-quizNameConstraints.grid(row=1, column=3, padx=(2,10), pady=(10,2), sticky="w")
+quizNameConstraints.grid(row=1, column=3, padx=(2,2), pady=(10,2), sticky="w")
+
+search = customtkinter.CTkEntry(root, placeholder_text="Search", font=("Bahnschrift", 20),width=80,height=30,border_width=1,corner_radius=10)
+search.isSearching = True
+search.bind("<Return>", search_text)
+search.bind("<FocusOut>", hide_search)
 
 # Row 2
 
