@@ -388,10 +388,54 @@ def on_textbox_focusout(event):
     textbox.insert("0.0", textbox.placeholder)
     textbox.configure(text_color='grey')
 
-
 def open_instructions():
   webbrowser.open("https://github.com/JaredTweed/PersonalProjects#readme")
 
+def fontsize_1(event):
+  size = 15
+  textbox.configure(font=("Bahnschrift", size))
+  error_screen.configure(font=("Bahnschrift", size))
+
+def fontsize_2(event):
+  size = 20
+  textbox.configure(font=("Bahnschrift", size))
+  error_screen.configure(font=("Bahnschrift", size))
+
+def fontsize_3(event):
+  size = 25
+  textbox.configure(font=("Bahnschrift", size))
+  error_screen.configure(font=("Bahnschrift", size))
+
+def fontsize_4(event):
+  size = 30
+  textbox.configure(font=("Bahnschrift", size))
+  error_screen.configure(font=("Bahnschrift", size))
+
+def fontsize_5(event):
+  size = 35
+  textbox.configure(font=("Bahnschrift", size))
+  error_screen.configure(font=("Bahnschrift", size))
+
+def fontsize_6(event):
+  print("222")
+  size = 40
+  textbox.configure(font=("Bahnschrift", size))
+  error_screen.configure(font=("Bahnschrift", size))
+
+def fontsize_7(event):
+  size = 45
+  textbox.configure(font=("Bahnschrift", size))
+  error_screen.configure(font=("Bahnschrift", size))
+
+def fontsize_8(event):
+  size = 50
+  textbox.configure(font=("Bahnschrift", size))
+  error_screen.configure(font=("Bahnschrift", size))
+
+def fontsize_9(event):
+  size = 100
+  textbox.configure(font=("Bahnschrift", size))
+  error_screen.configure(font=("Bahnschrift", size))
 
 # Main Code
 
@@ -410,6 +454,17 @@ root.grid_columnconfigure(2, weight=1)
 root.grid_columnconfigure(4, weight=2)
 
 root.bind('<Control-s>', save_text_to_file)
+
+root.bind('<Control-KeyPress-1>', fontsize_1)
+root.bind('<Control-KeyPress-2>', fontsize_2)
+root.bind('<Control-KeyPress-3>', fontsize_3)
+root.bind('<Control-KeyPress-4>', fontsize_4)
+root.bind('<Control-KeyPress-5>', fontsize_5)
+root.bind('<Control-KeyPress-6>', fontsize_6)
+root.bind('<Control-KeyPress-7>', fontsize_7)
+root.bind('<Control-KeyPress-8>', fontsize_8)
+root.bind('<Control-KeyPress-9>', fontsize_9)
+root.bind('<Control-KeyPress-0>', fontsize_1)
 
 # Row 0
 
@@ -465,6 +520,5 @@ openTxtButton.grid(row=4, column=1, sticky="nsew", padx=(2,2), pady=(2,10), colu
 
 questionBankButton = customtkinter.CTkButton(master=root, text="Create Question Bank", width=100, font=("Bahnschrift", 20), command=convert)
 questionBankButton.grid(row=3, column=2, sticky="nsew", padx=(2,5), pady=(2,10), rowspan = 2, columnspan = 2)
-
 
 root.mainloop()
