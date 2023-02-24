@@ -108,9 +108,6 @@ def text_to_xml_error_check(string):
         textbox.tag_add("start", f"{highlight_start}.0", f"{highlight_end}.0")
         textbox.tag_config("start", background= "dark red", foreground= "white")
         error_line_numbers.append(f"{highlight_start}.99")
-        
-        print("start tag added: ["+f"{highlight_start}.0"+", "+f"{highlight_end}.0"+"]")
-        
 
   # Quit program
   if(error):
@@ -215,12 +212,12 @@ def text_to_xml(string, xml_file, quiz_name):
   tree.write(xml_file, encoding="utf-8", xml_declaration=True)
 
 
-def convert():
-
+def check_all_errors():
   search.instance = 0
   search.prevPattern = ''
   search.iteratingQuestions = False
-  error_line_numbers = []
+  global error_line_numbers
+  error_line_numbers.clear()
   textbox.tag_remove("start", "1.0", "end")
   string = textbox.get("1.0", "end")
 
@@ -251,8 +248,14 @@ def convert():
   # Check for errors in the textbox
   hasError = text_to_xml_error_check(string)
 
+  return hasError == False and nameIsValid
+
+def convert():
+
+  errors_present = check_all_errors()
+
   # Create the question bank
-  if(hasError == False and nameIsValid and textbox.get("1.0", "end") != '' and textbox.get("1.0", "end") != textbox.placeholder+'\n'):
+  if(errors_present and textbox.get("1.0", "end") != '' and textbox.get("1.0", "end") != textbox.placeholder+'\n'):
     
     # Choose a location for the zip file
     file_path = filedialog.asksaveasfilename(initialfile=quizName.get(), defaultextension=".zip", filetypes=[("zip file", "*.zip")])
@@ -337,7 +340,7 @@ def textbox_ctrl_backspace(event):
     ent.delete(custom_index,end_idx)
   else:
     ent.delete("0.0",end_idx)
-  update_textbox_data()
+  update_linenumbers()
 
 def entry_ctrl_backspace(event):
   ent = event.widget
@@ -351,7 +354,7 @@ def entry_ctrl_backspace(event):
     ent.delete(index,end_idx)
   else:
     ent.delete("0.0",end_idx)
-  update_textbox_data()
+  update_linenumbers()
 
 def save_text_to_file(event=None):
   # Get the text from the textbox
@@ -374,11 +377,11 @@ def open_textfile():
   textbox.configure(text_color='white')
   textbox.insert("1.0", text)
 
-def update_textbox_data(event=None):
-  if(textbox.focus_get() == textbox):
-    root.after(1, update_linenumbers)
+def delay_update_linenumbers(event=None):
+  # This delays the line number update until the cursor has already moved.
+  root.after(1, update_linenumbers)
 
-def update_linenumbers(cursor_index=None):
+def update_linenumbers(event=None, cursor_index=None):
   if(cursor_index == None):
     cursor_index = textbox.index("insert")
     cursor_index = "{}.{}".format(cursor_index.split('.')[0], str(int(cursor_index.split('.')[1])+1))
@@ -462,16 +465,16 @@ def highlight_instance(pattern, instance):
     for match in matches:
       instance_interval.append([match.start(), match.end()])
       i += 1
+  if(i != 0):
     tkinter_index_start = index_to_ctk(textbox.get("0.0", "end"), instance_interval[instance % i][0])
     tkinter_index_end = index_to_ctk(textbox.get("0.0", "end"), instance_interval[instance % i][1])
 
     textbox.see(index_to_ctk(textbox.get("0.0", "end"), instance_interval[instance % i][0]))
 
-    print("search tag added: ["+str(tkinter_index_start)+", "+str(tkinter_index_end)+"]")
     textbox.tag_add("search tag", tkinter_index_start, tkinter_index_end)
     textbox.tag_config("search tag", background= "orange", foreground= "white")
 
-    update_linenumbers(tkinter_index_end)
+    update_linenumbers(cursor_index=tkinter_index_end)
 
 
 def search_text(event):
@@ -480,7 +483,7 @@ def search_text(event):
 def _search_text():
   search.iteratingQuestions = False
   pattern = escape_regex(search.get())
-  if(pattern == search.prevPattern):
+  if(pattern == search.prevPattern and pattern != ''):
     search.instance += 1
   else:
     search.instance = 0
@@ -498,22 +501,19 @@ def iterate_wrong_questions(event):
       search.iteratingQuestions = True
       search.prevPattern = ''
     question_index = error_line_numbers[search.instance % len(error_line_numbers)]
-    print(error_line_numbers)
-    print(search.instance % len(error_line_numbers))
-    print(question_index)
     textbox.see(question_index)
-    update_linenumbers(question_index)
+    update_linenumbers(cursor_index=question_index)
     textbox.tag_raise("search tag")
 
 def show_search_entry(event):
   search.grid(row=1, column=3, padx=(2,2), pady=(10,2), sticky="ew")
   search.focus()
   search.select_range("0", "end")
+  check_all_errors()
 
 def hide_search(event):
   textbox.tag_remove("search tag", "1.0", "end")
   search.grid_forget()
-  update_textbox_data()
 
 
 # Main Code
@@ -581,10 +581,8 @@ textbox = customtkinter.CTkTextbox(master=root, font=("Bahnschrift", 15), corner
 textbox.grid(row=2, column=0, padx=(10,2), pady=(2,2), sticky="nsew", columnspan = 4)
 textbox.bind('<Control-BackSpace>', textbox_ctrl_backspace)
 
-textbox.bind("<Key>", update_textbox_data)
-textbox.bind("<MouseWheel>", update_textbox_data)
-textbox.bind("<Button>", update_textbox_data)
-textbox.bind("<Configure>", update_textbox_data)
+textbox.bind("<Key>", delay_update_linenumbers)
+textbox.bind("<Button>", delay_update_linenumbers)
 
 textbox.placeholder = 'Paste your text here'
 textbox.insert("0.0", textbox.placeholder)
