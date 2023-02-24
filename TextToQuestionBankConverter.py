@@ -59,7 +59,7 @@ def text_to_xml_error_check(text_file):
     file = f.read()
 
   # Question List
-  numQuestions = len(re.findall(r'[^\s]+\s*\n+\s*\n+\s*[^\s]+', file))+1
+  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*(?=[^\s]+?)', file))+1
   error = False
   
   lines = open(text_file, 'r')
@@ -127,7 +127,7 @@ def text_to_xml(text_file, xml_file, quiz_name):
   with open(text_file, 'r') as f:
     file = f.read()
 
-  numQuestions = len(re.findall(r'[^\s]+\s*\n+\s*\n+\s*[^\s]+', file))+1
+  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*(?=[^\s]+?)', file))+1
     
   # Create the root element
   root = ET.Element('POOL')
