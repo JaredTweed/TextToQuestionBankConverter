@@ -14,6 +14,7 @@ import os
 import sys
 import shutil
 import io
+import webbrowser
 
 def write_time(root):
   """
@@ -26,28 +27,6 @@ def write_time(root):
   created.set('value', time)
   updated = ET.SubElement(dates, 'UPDATED')
   updated.set('value', time)
-
-
-def add_zip_to_name(zip_name):
-  """
-  Add the current time and a unique number to the given zip file name if a file with the same name already exists.
-  """
-  if(os.path.exists(f'{zip_name}.zip')):
-    time = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M')
-
-    if(os.path.exists(f'{zip_name}_{time}.zip')):
-      file_iteration = 1
-      iteration = str(file_iteration).zfill(5)
-      while(os.path.exists(f'{zip_name}_{time}_{iteration}.zip')):
-        file_iteration += 1
-        iteration = str(file_iteration).zfill(5)
-      zip_name = f'{zip_name}_{time}_{iteration}.zip'
-    else:
-      zip_name = f'{zip_name}_{time}.zip'
-  else:
-    zip_name = f'{zip_name}.zip'
-  return zip_name
-
 
 def create_manifest():
   """
@@ -65,54 +44,69 @@ def text_to_xml_error_check(string):
   Check the given text file for errors and exit if any are found.
   """
   # Question List
-  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*[^\s]+?', string))+1
+  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*(?=[^\s]+?)', string))+1
   error = False
+  currentLineNumber = 0
 
   error_screen.configure(state="normal")
-  error_screen.delete("1.0", "end")
-  
-  lines = io.StringIO(string)#open(text_file, 'r')
-  for i in range(numQuestions):
-    thisLine = lines.readline()
-    while(thisLine.isspace() or (thisLine.lower().startswith('mc') and thisLine[2:].isspace())):
-      thisLine = lines.readline()
 
-    # Scan the question for errors
-    root = ET.Element('POOL')
-    currentQ = ET.SubElement(root, 'QUESTION_MULTIPLECHOICE')
-    body = ET.SubElement(currentQ, 'BODY')
-    questionText = ET.SubElement(body, 'TEXT')
-    questionText.text = thisLine.strip()
-    
-    # Scan the answers for errors
-    a=0
-    answerSelected = False
-    multipleAnswersSelected = False 
-    thisLine = lines.readline()
-    while((not thisLine.isspace()) and thisLine != ''):
-      a += 1
-      thisLine = thisLine.strip()
-      if(thisLine.startswith('*')):
-        if(answerSelected):
-          multipleAnswersSelected = True
-        correct = a
-        answerSelected = True
+  if(string.isspace() == True or string == textbox.placeholder+'\n'):
+    error_screen.insert("end", 'No text is provided to convert.\n\n')
+    error = True
+  else:
+    lines = io.StringIO(string)
+    for i in range(numQuestions):
       thisLine = lines.readline()
+      currentLineNumber += 1
+      
+      while(thisLine.isspace() or (thisLine.lower().startswith('mc') and thisLine[2:].isspace())):
+        thisLine = lines.readline()
+        currentLineNumber += 1
 
-    # Print error # tkinter --> tag_add(tag, i,j) method
-    if (a == 0 or a == 1 or (not answerSelected) or multipleAnswersSelected or questionText.text.startswith('*')):
-      if(a == 0):
-        error_screen.insert("end", 'No answer options were provided for question {}.\n'.format(i+1))
-      if(a == 1):
-        error_screen.insert("end", 'Only one answer option was provided for question {}.\n'.format(i+1))
-      if(not answerSelected):
-        error_screen.insert("end", 'No answer is selected for question {}.\n'.format(i+1))
-      if(multipleAnswersSelected):
-        error_screen.insert("end", 'Multiple answers are selected for question {}.\n'.format(i+1))
-      if(questionText.text.startswith('*')):
-        error_screen.insert("end", "WARNING: Question {} begins with a '*' character.\n".format(i+1))
-      error_screen.insert("end", '\n Question {}: '.format(i+1) + questionText.text + '\n\n\n')
-      error = True
+      # Scan the question for errors
+      root = ET.Element('POOL')
+      currentQ = ET.SubElement(root, 'QUESTION_MULTIPLECHOICE')
+      body = ET.SubElement(currentQ, 'BODY')
+      questionText = ET.SubElement(body, 'TEXT')
+      questionText.text = thisLine.strip()
+
+      highlight_start = currentLineNumber
+      
+      # Scan the answers for errors
+      a=0
+      answerSelected = False
+      multipleAnswersSelected = False 
+      thisLine = lines.readline()
+      currentLineNumber += 1
+      while((not thisLine.isspace()) and thisLine != ''):
+        a += 1
+        thisLine = thisLine.strip()
+        if(thisLine.startswith('*')):
+          if(answerSelected):
+            multipleAnswersSelected = True
+          correct = a
+          answerSelected = True
+        thisLine = lines.readline()
+        currentLineNumber += 1
+      highlight_end = currentLineNumber
+
+      # Print error # tkinter --> tag_add(tag, i,j) method
+      if (a == 0 or a == 1 or (not answerSelected) or multipleAnswersSelected or questionText.text.startswith('*')):
+        if(a == 0):
+          error_screen.insert("end", 'No answer options were provided for question {}.\n'.format(i+1))
+        if(a == 1):
+          error_screen.insert("end", 'Only one answer option was provided for question {}.\n'.format(i+1))
+        if(not answerSelected):
+          error_screen.insert("end", 'No answer is selected for question {}.\n'.format(i+1))
+        if(multipleAnswersSelected):
+          error_screen.insert("end", 'Multiple answers are selected for question {}.\n'.format(i+1))
+        if(questionText.text.startswith('*')):
+          error_screen.insert("end", "WARNING: Question {} begins with a '*' character.\n".format(i+1))
+        error_screen.insert("end", 'Question {}: '.format(i+1) + questionText.text + '\n\n\n')
+        error = True
+
+        textbox.tag_add("start", f"{highlight_start}.0", f"{highlight_end}.0")
+        textbox.tag_config("start", background= "dark red", foreground= "white")
 
   # Quit program
   if(error):
@@ -124,7 +118,7 @@ def text_to_xml_error_check(string):
     
 
 
-def text_to_xml(text_file, xml_file, quiz_name):
+def text_to_xml(string, xml_file, quiz_name):
   """
   Convert a text file with multiple choice questions to an XML file.
   Check for errors in the text file and exit if any are found.
@@ -136,10 +130,7 @@ def text_to_xml(text_file, xml_file, quiz_name):
   """
 
   # Open the text file and read its contents
-  with open(text_file, 'r') as f:
-    file = f.read()
-
-  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*[^\s]+?', file))+1
+  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*(?=[^\s]+?)', string))+1
     
   # Create the root element
   root = ET.Element('POOL')
@@ -160,7 +151,7 @@ def text_to_xml(text_file, xml_file, quiz_name):
     q.set('class', 'QUESTION_MULTIPLECHOICE')
 
   # Open the text file for reading and iterate through each question
-  lines = open(text_file, 'r')
+  lines = io.StringIO(string)
   for i in range(numQuestions):
     # Skip blank or MC lines
     thisLine = lines.readline()
@@ -205,11 +196,6 @@ def text_to_xml(text_file, xml_file, quiz_name):
       thisLine = lines.readline()
       
     # Read and write the gradable answer
-    if(not answerSelected):
-      print('No answer is selected for question {}:'.format(i+1))
-      print(questionText.text)
-      input('Hit \'Enter\' to exit. Fix input text to create output.')
-      sys.exit()
     grader = ET.SubElement(currentQ, 'GRADABLE')
     FWC = ET.SubElement(grader, 'FEEDBACK_WHEN_CORRECT')
     FWC.text = 'Good work'
@@ -225,92 +211,68 @@ def text_to_xml(text_file, xml_file, quiz_name):
   tree.write(xml_file, encoding="utf-8", xml_declaration=True)
 
 
-def convert(): #string used to be text_file
+def convert():
 
   for tag in textbox.tag_names():
     textbox.tag_remove(tag, "1.0", "end")
   string = textbox.get("1.0", "end")
 
-  print(string)
-
-  # Assign the input file to 'text_file'
-  text_to_xml_error_check(string)
+  # Delete error messages from previous conversion attempts
+  error_screen.configure(state="normal")
+  error_screen.delete("1.0", "end")
+  error_screen.configure(state="disabled")
 
   # Get the quiz name from the user
-  print("Note, file names cannot include any of the following characters:\n  \/:*?\"<>|")
   if(quizName.get() != ''):
     QuizName = quizName.get()
   else:
     QuizName = 'Quiz'
-  
 
-##  # Check if any character in QuizName is in \/:*?"<>|
-##  c = ':'
-##  nameIsValid = True
-##  for char in QuizName:
-##    if char in "\/:*?\"<>|":
-##      nameIsValid = False
-##      c = char
-##  while(not nameIsValid):
-##    print(f"'{c}' is not allowed in a file name.")
-##    QuizName = input("Enter a valid name for your quiz: ")
-##    nameIsValid = True
-##    for char in QuizName:
-##      if char in "\/:*?\"<>|":
-##        nameIsValid = False
-##        c = char
+  # Check if any character in QuizName is in \/:*?"<>| 
+  error_screen.configure(state="normal")
+  c = []
+  nameIsValid = True
+  for char in QuizName:
+    if char in "\/:*?\"<>|":
+      nameIsValid = False
+      if(char not in c): c.append(char)
+  if (nameIsValid == False):
+    for item in c: error_screen.insert("end", f"'{item}' is not allowed in a quiz name.\n")
+    error_screen.insert("end", "Enter a valid name for your quiz.\n\n\n")
+  error_screen.configure(state="disabled")
 
-        
-##  # Check if a zip file with the same name already exists
-##  x = 'q'
-##  if(os.path.exists(f'{QuizName}.zip')):
-##    print("Because a zip file with that name already exists, the new output file")
-##    print("will have the same name with the date and time appended to the end of")
-##    print("its title. Press 'Enter' to accept. If you wish to replace the prior")
-##    x = input("output file instead, type 'r' then hit 'Enter'.\n\n")
-##
-##  # Create zipped files
-##  text_to_xml(text_file, 'res00001.dat', QuizName)
-##  create_manifest()
-##
-##  # Zip the XML and manifest files into a folder with a proper name
-##  if(x.lower() == 'r'):
-##    zipFileName = f'{QuizName}.zip'
-##  else:
-##    zipFileName = add_zip_to_name(QuizName)
-##  with zipfile.ZipFile(zipFileName, 'w') as zip:
-##    zip.write('imsmanifest.xml')
-##    zip.write('res00001.dat')
-##
-##  # Delete the unzipped XML and manifest files
-##  try:
-##    os.remove('imsmanifest.xml')
-##    os.remove('res00001.dat')
-##  except OSError:
-##    pass
-##
-##  # renames input file
-##  new_name = 'converted ' + text_file[8:]
-##  if(os.path.exists(new_name)):
-##    print(f"The input file\n'{new_name}'\nalready has a converted file with the same name. Type 'r' then hit 'Enter'")
-##    print("if you wish to replace it. Otherwise hit 'Enter', and the input text")
-##    r = input("file will have its time and date appended to the end of its name.\n\n")
-##    if(r.lower() == 'r'):
-##      try:
-##        os.remove(new_name)
-##      except OSError:
-##        pass    
-##    else:
-##      time_now = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M')
-##      new_name = f'{new_name[:-4]}_{time_now}.txt'
-##  try:
-##    shutil.copy(text_file, new_name)
-##    os.remove(text_file)
-##  except:
-##    print("ERROR. Could not rename input text file because it is being")
-##    print("used somewhere else (likely in a terminal or in another instance")
-##    print("of this program). Instead another copy of the input text file")
-##    input("was made and renamed. Please delete original copy manually.")
+  # Check for errors in the textbox
+  hasError = text_to_xml_error_check(string)
+
+  # Create the question bank
+  if(hasError == False and nameIsValid and textbox.get("1.0", "end") != '' and textbox.get("1.0", "end") != textbox.placeholder+'\n'):
+    
+    # Choose a location for the zip file
+    file_path = filedialog.asksaveasfilename(initialfile=quizName.get(), defaultextension=".zip", filetypes=[("zip file", "*.zip")])
+    with zipfile.ZipFile(file_path, 'w') as zip_file:
+      pass
+    file_name = os.path.basename(file_path)
+
+    # Create the files for the zip folder
+    text_to_xml(string, 'res00001.dat', QuizName)
+    create_manifest()
+
+    # Zip the XML and manifest files into a folder with a proper name
+    with zipfile.ZipFile(file_path, 'w') as zip:
+      zip.write('imsmanifest.xml')
+      zip.write('res00001.dat')
+
+    # Delete the unzipped XML and manifest files
+    try:
+      os.remove('imsmanifest.xml')
+      os.remove('res00001.dat')
+    except OSError:
+      pass
+
+    error_screen.configure(state="normal")
+    error_screen.insert("end", "Zip file created.\n")
+    error_screen.configure(state="disabled")
+
 
 
 
@@ -381,8 +343,7 @@ def entry_ctrl_backspace(event):
   else:
     ent.delete("0.0",end_idx)
 
-
-def save_text_to_file(event=0):
+def save_text_to_file(event=None):
   # Get the text from the textbox
   text = textbox.get("1.0", "end")
 
@@ -394,73 +355,116 @@ def save_text_to_file(event=0):
     with open(file_path, "w") as file:
       file.write(text)
 
-def update_linenumbers(event):
-  root.after(1, _update_linenumbers)
+def open_textfile():
+  file_path = filedialog.askopenfilename(defaultextension=".txt", filetypes=[("text file", "*.txt")])
+  with open(file_path, "r") as file:
+      text = file.read()
+  # Do something with the text, such as display it in a text box
+  textbox.delete("1.0", "end")
+  textbox.configure(text_color='white')
+  textbox.insert("1.0", text)
 
-def _update_linenumbers():
-  
-  i = textbox.index(tk.INSERT)
+def update_textbox_data(event):
+  root.after(1, update_linenumbers)
+
+def update_linenumbers():
   cursor_pos = textbox.index("insert")
   line_num = cursor_pos.split('.')[0]
 
   cursor_index = textbox.index("insert")
   cursor_index = "{}.{}".format(cursor_index.split('.')[0], str(int(cursor_index.split('.')[1])+1))
   string = textbox.get("1.0",cursor_index)
-  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*[^\s]+?', string))+1
+  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*(?=[^\s]+?)', string))+1
   
   linenumbers.configure(text=f"Line Number: {line_num}\nQuestion Number: {numQuestions}")
+
+def on_textbox_focusin(event):
+  if textbox.get("0.0", "end") == textbox.placeholder+'\n':
+    textbox.delete("0.0", "end")
+    textbox.configure(text_color='white')
+
+def on_textbox_focusout(event):
+  if textbox.get("0.0", "end") == '\n':
+    textbox.insert("0.0", textbox.placeholder)
+    textbox.configure(text_color='grey')
+
+
+def open_instructions():
+  webbrowser.open("https://github.com/JaredTweed/PersonalProjects#readme")
+
 
 # Main Code
 
 root = customtkinter.CTk()
-root.geometry("920x400")
+root.geometry("1080x400")
 root.resizable(True, True)
-root.minsize(920, 400)
+root.minsize(800, 400)
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("green")
 
 root.grid_rowconfigure((0), weight=0)
 root.grid_rowconfigure((2), weight=2)
-root.grid_columnconfigure(1, weight=1, minsize=240)
-root.grid_columnconfigure(3, minsize=310)
+root.grid_rowconfigure((3,4), weight=0)
+root.grid_columnconfigure(1, minsize=190)
+root.grid_columnconfigure(2, weight=1)
+root.grid_columnconfigure(4, weight=2)
 
 root.bind('<Control-s>', save_text_to_file)
 
+# Row 0
+
 title = Label(master=root, text="Text To Question Bank Converter", fg="white", background="#222325", font=("Bahnschrift", 20))
-title.grid(row=0, column=0, padx=10, pady=10, sticky="n", columnspan = 3)
+title.grid(row=0, column=0, padx=10, pady=10, sticky="n", columnspan = 4)
+
+search = customtkinter.CTkButton(master=root, text="Help", font=("Bahnschrift", 20), command=open_instructions)
+search.grid(row=0, column=4, padx=(2,10), pady=(10,5), sticky="nsew", columnspan = 1)
+
+
+# Row 1
 
 quizName = customtkinter.CTkEntry(root, placeholder_text="Quiz Name", font=("Bahnschrift", 20),width=300,height=30,border_width=1,corner_radius=10)
-quizName.grid(row=1, column=0, padx=(10, 2), pady=5, sticky="ew", columnspan = 2)
+quizName.grid(row=1, column=0, padx=(10, 2), pady=(10,2), sticky="ew", columnspan = 3)
 quizName.bind('<Control-BackSpace>', entry_ctrl_backspace)
 
-quizNameConstraints = Label(master=root, text="Note, file names cannot include any of\n the following characters:\t  \ /:*?\"<>|", fg="white", background="#222325", font=("Bahnschrift", 10))
-quizNameConstraints.grid(row=1, column=2, padx=(2,10), pady=10, sticky="w")
+quizNameConstraints = Label(master=root, text="Note, quiz names cannot include any of\n the following characters:\t  \ /:*?\"<>|", fg="white", background="#222325", font=("Bahnschrift", 10))
+quizNameConstraints.grid(row=1, column=3, padx=(2,10), pady=(10,2), sticky="w")
 
-textbox = customtkinter.CTkTextbox(master=root, width=400, height=600, font=("Bahnschrift", 15), corner_radius=10, wrap='word')
-textbox.grid(row=2, column=0, padx=(10,2), pady=10, sticky="nsew", columnspan = 3)
-textbox.focus_set()
+# Row 2
+
+textbox = customtkinter.CTkTextbox(master=root, font=("Bahnschrift", 15), corner_radius=10, wrap='word')
+
+textbox.grid(row=2, column=0, padx=(10,2), pady=(2,2), sticky="nsew", columnspan = 4)
 textbox.bind('<Control-BackSpace>', textbox_ctrl_backspace)
 
-textbox.bind("<Key>", update_linenumbers)
-textbox.bind("<MouseWheel>", update_linenumbers)
-textbox.bind("<Configure>", update_linenumbers)
+textbox.bind("<Key>", update_textbox_data)
+textbox.bind("<MouseWheel>", update_textbox_data)
+textbox.bind("<Button>", update_textbox_data)
+textbox.bind("<Configure>", update_textbox_data)
 
-##linenumbers = customtkinter.CTkTextbox(master=root, width=60, height=600, font=("Bahnschrift", 15), corner_radius=10, state="disabled", activate_scrollbars=False)
-##linenumbers.grid(row=2, column=0, padx=(10, 1), pady=10, sticky="w")
+textbox.placeholder = 'Paste your text here'
+textbox.insert("0.0", textbox.placeholder)
+textbox.configure(text_color='grey')
+textbox.bind('<FocusIn>', on_textbox_focusin)
+textbox.bind('<FocusOut>', on_textbox_focusout)
 
 error_screen = customtkinter.CTkTextbox(master=root, width=200, height=600, font=("Bahnschrift", 15), corner_radius=10, state="normal", wrap='word')
-error_screen.grid(row=1, column=3, padx=(2, 10), pady=10, sticky="nsew", rowspan=3)
+error_screen.grid(row=1, column=4, padx=(2, 10), pady=10, sticky="nsew", rowspan=4)
 error_screen.insert("end", "Error explanations for the input text will go here if question bank creation fails.")
 error_screen.configure(state="disabled")
 
+# Row 3 & 4
+
 linenumbers = Label(master=root, text="Line Number: 1\nQuestion Number: 1", fg="white", background="#222325", font=("Bahnschrift", 10), anchor="w")
-linenumbers.grid(row=3, column=0, sticky="ew", padx=(10,2), pady=10, columnspan = 1)
+linenumbers.grid(row=3, column=0, sticky="ew", padx=(10,2), pady=(2,10), rowspan = 2, columnspan = 1)
 
 saveTxtButton = customtkinter.CTkButton(master=root, text="Save Textbox As Textfile", width=250, font=("Bahnschrift", 20), command=save_text_to_file)
-saveTxtButton.grid(row=3, column=1, sticky="ew", padx=(2,2), pady=10, columnspan = 1)
+saveTxtButton.grid(row=3, column=1, sticky="nsew", padx=(2,2), pady=(2,2), columnspan = 1)
+
+openTxtButton = customtkinter.CTkButton(master=root, text="Open Textfile", font=("Bahnschrift", 20), command=open_textfile)
+openTxtButton.grid(row=4, column=1, sticky="nsew", padx=(2,2), pady=(2,10), columnspan = 1)
 
 questionBankButton = customtkinter.CTkButton(master=root, text="Create Question Bank", width=100, font=("Bahnschrift", 20), command=convert)
-questionBankButton.grid(row=3, column=2, sticky="ew", padx=(2,5), pady=10, columnspan = 1)
+questionBankButton.grid(row=3, column=2, sticky="nsew", padx=(2,5), pady=(2,10), rowspan = 2, columnspan = 2)
 
 
 root.mainloop()
