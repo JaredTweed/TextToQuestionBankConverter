@@ -107,6 +107,7 @@ def text_to_xml_error_check(string):
 
         textbox.tag_add("start", f"{highlight_start}.0", f"{highlight_end}.0")
         textbox.tag_config("start", background= "dark red", foreground= "white")
+        error_line_numbers.append(f"{highlight_start}.99")
 
   # Quit program
   if(error):
@@ -211,10 +212,13 @@ def text_to_xml(string, xml_file, quiz_name):
   tree.write(xml_file, encoding="utf-8", xml_declaration=True)
 
 
-def convert():
-
-  for tag in textbox.tag_names():
-    textbox.tag_remove(tag, "1.0", "end")
+def check_all_errors():
+  search.instance = 0
+  search.prevPattern = ''
+  search.iteratingQuestions = False
+  global error_line_numbers
+  error_line_numbers.clear()
+  textbox.tag_remove("start", "1.0", "end")
   string = textbox.get("1.0", "end")
 
   # Delete error messages from previous conversion attempts
@@ -244,8 +248,14 @@ def convert():
   # Check for errors in the textbox
   hasError = text_to_xml_error_check(string)
 
+  return hasError == False and nameIsValid
+
+def convert():
+
+  errors_present = check_all_errors()
+
   # Create the question bank
-  if(hasError == False and nameIsValid and textbox.get("1.0", "end") != '' and textbox.get("1.0", "end") != textbox.placeholder+'\n'):
+  if(errors_present and textbox.get("1.0", "end") != '' and textbox.get("1.0", "end") != textbox.placeholder+'\n'):
     
     # Choose a location for the zip file
     file_path = filedialog.asksaveasfilename(initialfile=quizName.get(), defaultextension=".zip", filetypes=[("zip file", "*.zip")])
@@ -286,7 +296,7 @@ def convert():
 
 
 def index_to_ctk(string, index):
-  custom_index = "{}.{}".format(string.count('\n', 0, index) + 1, index - string.rfind('\n', 0, index))
+  custom_index = "{}.{}".format(string.count('\n', 0, index) + 1, index - string.rfind('\n', 0, index)-1) 
   return custom_index
 
 def find_last_regex_match(string):
@@ -325,10 +335,12 @@ def textbox_ctrl_backspace(event):
   index = find_last_regex_match(string)
   
   if index != -1:
+    index += 1
     custom_index = index_to_ctk(string, index)
     ent.delete(custom_index,end_idx)
   else:
     ent.delete("0.0",end_idx)
+  update_linenumbers()
 
 def entry_ctrl_backspace(event):
   ent = event.widget
@@ -342,6 +354,7 @@ def entry_ctrl_backspace(event):
     ent.delete(index,end_idx)
   else:
     ent.delete("0.0",end_idx)
+  update_linenumbers()
 
 def save_text_to_file(event=None):
   # Get the text from the textbox
@@ -364,15 +377,15 @@ def open_textfile():
   textbox.configure(text_color='white')
   textbox.insert("1.0", text)
 
-def update_textbox_data(event):
+def delay_update_linenumbers(event=None):
+  # This delays the line number update until the cursor has already moved.
   root.after(1, update_linenumbers)
 
-def update_linenumbers():
-  cursor_pos = textbox.index("insert")
-  line_num = cursor_pos.split('.')[0]
-
-  cursor_index = textbox.index("insert")
-  cursor_index = "{}.{}".format(cursor_index.split('.')[0], str(int(cursor_index.split('.')[1])+1))
+def update_linenumbers(event=None, cursor_index=None):
+  if(cursor_index == None):
+    cursor_index = textbox.index("insert")
+    cursor_index = "{}.{}".format(cursor_index.split('.')[0], str(int(cursor_index.split('.')[1])+1))
+  line_num = cursor_index.split('.')[0]
   string = textbox.get("1.0",cursor_index)
   numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*(?=[^\s]+?)', string))+1
   
@@ -417,7 +430,6 @@ def fontsize_5(event):
   error_screen.configure(font=("Bahnschrift", size))
 
 def fontsize_6(event):
-  print("222")
   size = 40
   textbox.configure(font=("Bahnschrift", size))
   error_screen.configure(font=("Bahnschrift", size))
@@ -437,7 +449,76 @@ def fontsize_9(event):
   textbox.configure(font=("Bahnschrift", size))
   error_screen.configure(font=("Bahnschrift", size))
 
+def escape_regex(text):
+  special_chars = ['\\', '.', '*', '+', '?', '{', '}', '[', ']', '|', '(', ')', '^', '$']
+  pattern = '|'.join(re.escape(char) for char in special_chars)
+  return re.sub(pattern, lambda match: '\\' + match.group(0), text)
+
+
+def highlight_instance(pattern, instance):
+  textbox.tag_remove("search tag", "1.0", "end")
+  instance_interval = []
+
+  matches = re.finditer(pattern, textbox.get("0.0", "end"), re.IGNORECASE)
+  i = 0
+  if(matches != None):
+    for match in matches:
+      instance_interval.append([match.start(), match.end()])
+      i += 1
+  if(i != 0):
+    tkinter_index_start = index_to_ctk(textbox.get("0.0", "end"), instance_interval[instance % i][0])
+    tkinter_index_end = index_to_ctk(textbox.get("0.0", "end"), instance_interval[instance % i][1])
+
+    textbox.see(index_to_ctk(textbox.get("0.0", "end"), instance_interval[instance % i][0]))
+
+    textbox.tag_add("search tag", tkinter_index_start, tkinter_index_end)
+    textbox.tag_config("search tag", background= "orange", foreground= "white")
+
+    update_linenumbers(cursor_index=tkinter_index_end)
+
+
+def search_text(event):
+  root.after(1, _search_text)
+
+def _search_text():
+  search.iteratingQuestions = False
+  pattern = escape_regex(search.get())
+  if(pattern == search.prevPattern and pattern != ''):
+    search.instance += 1
+  else:
+    search.instance = 0
+    search.prevPattern = pattern
+  root.after(2, lambda: highlight_instance(pattern, search.instance))
+  textbox.tag_raise("search tag")
+
+def iterate_wrong_questions(event):
+  if(len(error_line_numbers) != 0):
+    textbox.tag_remove("search tag", "1.0", "end")
+    if(search.iteratingQuestions == True):
+      search.instance += 1
+    else:
+      search.instance = 0
+      search.iteratingQuestions = True
+      search.prevPattern = ''
+    question_index = error_line_numbers[search.instance % len(error_line_numbers)]
+    textbox.see(question_index)
+    update_linenumbers(cursor_index=question_index)
+    textbox.tag_raise("search tag")
+
+def show_search_entry(event):
+  search.grid(row=1, column=3, padx=(2,2), pady=(10,2), sticky="ew")
+  search.focus()
+  search.select_range("0", "end")
+  check_all_errors()
+
+def hide_search(event):
+  textbox.tag_remove("search tag", "1.0", "end")
+  search.grid_forget()
+
+
 # Main Code
+
+error_line_numbers = []
 
 root = customtkinter.CTk()
 root.geometry("800x400")
@@ -454,6 +535,7 @@ root.grid_columnconfigure(2, weight=1)
 root.grid_columnconfigure(4, weight=2)
 
 root.bind('<Control-s>', save_text_to_file)
+root.bind('<Control-f>', show_search_entry)
 
 root.bind('<Control-KeyPress-1>', fontsize_1)
 root.bind('<Control-KeyPress-2>', fontsize_2)
@@ -471,8 +553,8 @@ root.bind('<Control-KeyPress-0>', fontsize_1)
 title = Label(master=root, text="Text To Question Bank Converter", fg="white", background="#222325", font=("Bahnschrift", 20))
 title.grid(row=0, column=0, padx=10, pady=10, sticky="n", columnspan = 4)
 
-search = customtkinter.CTkButton(master=root, text="Help", font=("Bahnschrift", 20), command=open_instructions)
-search.grid(row=0, column=4, padx=(2,10), pady=(10,5), sticky="nsew", columnspan = 1)
+help_button = customtkinter.CTkButton(master=root, text="Help", font=("Bahnschrift", 20), command=open_instructions)
+help_button.grid(row=0, column=4, padx=(2,10), pady=(10,5), sticky="nsew", columnspan = 1)
 
 
 # Row 1
@@ -482,7 +564,15 @@ quizName.grid(row=1, column=0, padx=(10, 2), pady=(10,2), sticky="ew", columnspa
 quizName.bind('<Control-BackSpace>', entry_ctrl_backspace)
 
 quizNameConstraints = Label(master=root, text="Quiz names cannot include\n the following:\t\ /:*?\"<>|", fg="white", background="#222325", font=("Bahnschrift", 10))
-quizNameConstraints.grid(row=1, column=3, padx=(2,10), pady=(10,2), sticky="w")
+quizNameConstraints.grid(row=1, column=3, padx=(2,2), pady=(10,2), sticky="w")
+
+search = customtkinter.CTkEntry(root, placeholder_text="Search", font=("Bahnschrift", 20),width=80,height=30,border_width=1,corner_radius=10)
+search.instance = 0
+search.prevPattern = ''
+search.iteratingQuestions = False
+search.bind("<Return>", search_text)
+search.bind("<FocusOut>", hide_search)
+search.bind("<Control-Return>", iterate_wrong_questions)
 
 # Row 2
 
@@ -491,10 +581,8 @@ textbox = customtkinter.CTkTextbox(master=root, font=("Bahnschrift", 15), corner
 textbox.grid(row=2, column=0, padx=(10,2), pady=(2,2), sticky="nsew", columnspan = 4)
 textbox.bind('<Control-BackSpace>', textbox_ctrl_backspace)
 
-textbox.bind("<Key>", update_textbox_data)
-textbox.bind("<MouseWheel>", update_textbox_data)
-textbox.bind("<Button>", update_textbox_data)
-textbox.bind("<Configure>", update_textbox_data)
+textbox.bind("<Key>", delay_update_linenumbers)
+textbox.bind("<Button>", delay_update_linenumbers)
 
 textbox.placeholder = 'Paste your text here'
 textbox.insert("0.0", textbox.placeholder)
@@ -519,6 +607,6 @@ openTxtButton = customtkinter.CTkButton(master=root, text="Open Textfile", font=
 openTxtButton.grid(row=4, column=1, sticky="nsew", padx=(2,2), pady=(2,10), columnspan = 1)
 
 questionBankButton = customtkinter.CTkButton(master=root, text="Create Question Bank", width=100, font=("Bahnschrift", 20), command=convert)
-questionBankButton.grid(row=3, column=2, sticky="nsew", padx=(2,5), pady=(2,10), rowspan = 2, columnspan = 2)
+questionBankButton.grid(row=3, column=2, sticky="nsew", padx=(2,2), pady=(2,10), rowspan = 2, columnspan = 2)
 
 root.mainloop()
