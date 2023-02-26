@@ -1,8 +1,10 @@
-# Instructions for TextToQuestionBankConverter
+# Instructions for TextToQuestionBankGuiConverter
 
-### 1. Download the TextToQuestionBankConverter.exe file into a folder on your Windows computer. The latest version is available at [https://github.com/JaredTweed/PersonalProjects/](https://github.com/JaredTweed/PersonalProjects/)  
+### 1. Download the TextToQuestionBankGuiConverter.exe file into a folder on your Windows computer. 
+The latest version is available at [https://github.com/JaredTweed/TextToQuestionBankConverter/](https://github.com/JaredTweed/TextToQuestionBankConverter/)  
 
-### 2. Use Microsoft Word or another word processor to format your multiple-choice questions consistent with the following example. Leave a blank line between questions. Mark the correct answer with an asterisk:  
+### 2. Format your multiple-choice questions
+Do this in Microsoft Word or another word processor. Format them consistent with the following examples. Leave a blank line between questions. Mark the correct answer with an asterisk:  
   
 Justin sees an illogical argument for a particular belief. If Justin likes this belief and wants it to be true, there’s a good chance he'll find it difficult to notice the problem with the argument. This effect is called  
 Parkinson's law  
@@ -14,21 +16,33 @@ Which of the following is explicitly making a claim about cause?
 People who supervise more people at work tend to have lower levels of stress  
 People who exercise regularly tend to have fewer medical problems  
 
-### 3) Save the question file while following these three guidelines. Save it 
-- As a text file 
-- In the same directory as the TextToQuestionBankConverter.exe file
-- With a filename that begins with the word “convert” followed by a space: e.g., “convert test1.txt”  
-  
+### 3) Open the conversion program
 
-### 4) Using the Windows File Explorer, navigate to and double click on the conversion program
-If the conversion program finds errors in your input file, exit the program and correct the errors before trying again (e.g., a question with no answers provided or a question with an asterisk beside two different answers).  
-  
+### 4) Type in a title for your quiz 
+Write this in the "Quiz Name" space in the top left of the conversion program 
 
-### 5) The program will change the first word of the .txt filename to “converted”.  
-  
+### 5) Input your questions by doing one of the following:
+a) Copy test questions from your word processor into the conversion program  
+(Paste these into the big box on the left side of the screen.)
 
-### 6) In that same folder, you will now have a Question Bank file (a .zip file) that can be imported to Blackboard or Moodle. If you are importing the test questions into Moodle, specify that your file is in Blackboard format.
+b) or instead save your word processor file as a textfile on your computer, and then click the "Open Textfile" option at the bottom left of the conversion program to select that saved file.
 
+### 6) Click on "Create Question Bank" 
+-Found near the bottom  of the conversion program window
+-You will be asked to select where you want to save the output file. 
+-You will now have a Question Bank file (a .zip file) that can be imported to Blackboard or Moodle. If you are importing the test questions into Moodle, specify that your file is in Blackboard format.
 
+### Font: 
+To change the  font size displayed in the conversion program 
+press the Ctrl key on your keyboard, and while holding that, press a digit key (1 through 9)
 
-### Anyone can use the TextToQuestionBankConverter program or build on it at no cost, provided they give the author, Jared Tweed, credit when they distribute this program or its derivatives.
+### Searching
+**Ctrl+F:** Opens a search box to the right of the quiz name input. Type text in the box.
+**Enter:** Searches for the next text matching the searched term.
+**Ctrl+Enter:** Searches for the next question with an error.
+Helpful Tip: *Ctrl+Down Arrow* moves cursor to the next question thereby allowing you to review questions quickly
+
+*Ctrl+S:* Saves the textbox contents as a textfile.
+
+### Licensing: 
+Anyone can use the TextToQuestionBankConverter program or build on it at no cost, provided they give the author, Jared Tweed, credit when they distribute this program or its derivatives.
