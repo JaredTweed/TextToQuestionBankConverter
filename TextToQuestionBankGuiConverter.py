@@ -340,7 +340,7 @@ def textbox_ctrl_backspace(event):
     ent.delete(custom_index,end_idx)
   else:
     ent.delete("0.0",end_idx)
-  update_linenumbers()
+  delay_update_linenumbers()
 
 def entry_ctrl_backspace(event):
   ent = event.widget
@@ -354,7 +354,7 @@ def entry_ctrl_backspace(event):
     ent.delete(index,end_idx)
   else:
     ent.delete("0.0",end_idx)
-  update_linenumbers()
+  delay_update_linenumbers()
 
 def save_text_to_file(event=None):
   # Get the text from the textbox
