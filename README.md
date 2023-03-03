@@ -40,9 +40,9 @@ b) or instead save your word processor file as a textfile on your computer, and 
 To change the font size displayed in the conversion program press a digit key (1 through 9) while holding the Ctrl key on your keyboard.
 
 ### Searching
-**Ctrl+F:** Opens a search box to the right of the quiz name input. Type text in the box. Note that when *Ctrl+F:* is pressed, the error screen updates, and the questions with errors are highlighted in red.  
-**Enter:** Searches for and scrolls the textbox to the next text matching the searched term.  
-**Ctrl+Enter:** Searches for and scrolls the textbox to the next question with an error.
+**Ctrl+F:** Opens a search bar to the right of the quiz name input box. Note that when *Ctrl+F:* is pressed, the error screen updates, and the questions with errors are highlighted in red.  
+**Enter:** Pressing *Enter* from the search bar searches for and scrolls the main textbox to the next text matching the searched term.  
+**Ctrl+Enter:** Pressing *Ctrl+Enter* from the search bar searches for and scrolls the main textbox to the next question with an error.
 
 ![image](https://user-images.githubusercontent.com/59375645/222653859-5c7a6eae-e2bf-4e22-9943-29facfd10cdc.png)
 ![image](https://user-images.githubusercontent.com/59375645/222653460-f32b0413-73ad-46ff-a3a5-2f4516b34b1b.png)
