@@ -28,10 +28,8 @@ a) Copy test questions from your word processor into the conversion program
 b) or instead save your word processor file as a textfile on your computer, and then click the "Open Textfile" option at the bottom left of the conversion program to select that saved file.
 
 ### 6) Click on "Create Question Bank" 
-\- Found near the bottom  of the conversion program window
-
-\- You will be asked to select where you want to save the output file. 
-
+\- Found near the bottom  of the conversion program window  
+\- You will be asked to select where you want to save the output file.  
 \- You will now have a Question Bank file (a .zip file) that can be imported to Blackboard or Moodle. If you are importing the test questions into Moodle, specify that your file is in Blackboard format.
 
 ### Font: 
