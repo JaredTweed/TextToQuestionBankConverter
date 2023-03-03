@@ -1,5 +1,8 @@
 # Instructions for TextToQuestionBankGuiConverter
 
+![image](https://user-images.githubusercontent.com/59375645/222648200-154b47cb-3a6d-4a9e-97a3-b7aeb357200a.png)
+![image](https://user-images.githubusercontent.com/59375645/222648109-3090eb3a-add7-4f21-9b2b-8168c2f02656.png)
+
 ### 1. Download the TextToQuestionBankGuiConverter.exe file into a folder on your Windows computer. 
 The latest version is available at [https://github.com/JaredTweed/TextToQuestionBankConverter/](https://github.com/JaredTweed/TextToQuestionBankConverter/)  
 
@@ -25,22 +28,26 @@ Write this in the "Quiz Name" space in the top left of the conversion program
 a) Copy test questions from your word processor into the conversion program  
 (Paste these into the big box on the left side of the screen.)
 
-b) or instead save your word processor file as a textfile on your computer, and then click the "Open Textfile" option at the bottom left of the conversion program to select that saved file.
+b) or instead save your word processor file as a textfile on your computer, and then click the "Open Textfile" option at the bottom left of the conversion program to select that saved file from your default file manager application.  
+![image](https://user-images.githubusercontent.com/59375645/222649652-495ab0c6-50dc-4471-a354-186b22ba65fc.png)
 
 ### 6) Click on "Create Question Bank" 
-\- Found near the bottom  of the conversion program window.  
-\- You will be asked to select where you want to save the output file.  
+\- Found near the bottom of the conversion program window.  
+\- You will be asked by using the file manager application to select where you want to save the output file.  
 \- You will now have a Question Bank file (a .zip file) that can be imported to Blackboard or Moodle. If you are importing the test questions into Moodle, specify that your file is in Blackboard format.
 
 ### Font: 
-To change the  font size displayed in the conversion program 
-press the Ctrl key on your keyboard, and while holding that, press a digit key (1 through 9)
+To change the font size displayed in the conversion program press a digit key (1 through 9) while holding the Ctrl key on your keyboard.
 
 ### Searching
-**Ctrl+F:** Opens a search box to the right of the quiz name input. Type text in the box.
-**Enter:** Searches for the next text matching the searched term.
-**Ctrl+Enter:** Searches for the next question with an error.
-Helpful Tip: *Ctrl+Down Arrow* moves cursor to the next question thereby allowing you to review questions quickly
+**Ctrl+F:** Opens a search box to the right of the quiz name input. Type text in the box. Note that when *Ctrl+F:* is pressed, the error screen updates, and the questions with errors are highlighted in red.  
+**Enter:** Searches for and scrolls the textbox to the next text matching the searched term.  
+**Ctrl+Enter:** Searches for and scrolls the textbox to the next question with an error.
+
+![image](https://user-images.githubusercontent.com/59375645/222653859-5c7a6eae-e2bf-4e22-9943-29facfd10cdc.png)
+![image](https://user-images.githubusercontent.com/59375645/222653460-f32b0413-73ad-46ff-a3a5-2f4516b34b1b.png)
+
+Helpful Tip: When in the main textbox, *Ctrl+Down Arrow* moves cursor to the next question thereby allowing you to review questions quickly.  
 
 *Ctrl+S:* Saves the textbox contents as a textfile.
 
