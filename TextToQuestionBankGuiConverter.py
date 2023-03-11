@@ -75,7 +75,8 @@ def text_to_xml_error_check(string):
       # Scan the answers for errors
       a=0
       answerSelected = False
-      multipleAnswersSelected = False 
+      multipleAnswersSelected = False
+      answerIsEmpty = False
       thisLine = lines.readline()
       currentLineNumber += 1
       while((not thisLine.isspace()) and thisLine != ''):
@@ -86,22 +87,27 @@ def text_to_xml_error_check(string):
             multipleAnswersSelected = True
           correct = a
           answerSelected = True
+          if(thisLine == '*'):
+            answerIsEmpty = True
         thisLine = lines.readline()
         currentLineNumber += 1
       highlight_end = currentLineNumber
 
       # Print error # tkinter --> tag_add(tag, i,j) method
-      if (a == 0 or a == 1 or (not answerSelected) or multipleAnswersSelected or questionText.text.startswith('*')):
+      if (a == 0 or a == 1 or (not answerSelected) or multipleAnswersSelected or answerIsEmpty or questionText.text.startswith('*')):
+        error_screen.insert("end", 'ERROR IN QUESTION {}:\n'.format(i+1))
         if(a == 0):
-          error_screen.insert("end", 'No answer options were provided for question {}.\n'.format(i+1))
+          error_screen.insert("end", 'No answer options provided.\n')
         if(a == 1):
-          error_screen.insert("end", 'Only one answer option was provided for question {}.\n'.format(i+1))
+          error_screen.insert("end", 'Only one answer option provided.\n')
         if(not answerSelected):
-          error_screen.insert("end", 'No answer is selected for question {}.\n'.format(i+1))
+          error_screen.insert("end", 'No answer selected.\n')
         if(multipleAnswersSelected):
-          error_screen.insert("end", 'Multiple answers are selected for question {}.\n'.format(i+1))
+          error_screen.insert("end", 'Multiple answers selected.\n')
         if(questionText.text.startswith('*')):
-          error_screen.insert("end", "WARNING: Question {} begins with a '*' character.\n".format(i+1))
+          error_screen.insert("end", "Begins with a '*' character.\n")
+        if(answerIsEmpty):
+          error_screen.insert("end", "Has a blank answer option.\n")
         error_screen.insert("end", 'Question {}: '.format(i+1) + questionText.text + '\n\n\n')
         error = True
 
