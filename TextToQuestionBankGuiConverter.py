@@ -264,6 +264,8 @@ def convert():
     file_name = os.path.basename(file_path)
 
     # Create the files for the zip folder
+    string = textbox.get("1.0","end")
+    QuizName = quizName.get()
     text_to_xml(string, 'res00001.dat', QuizName)
     create_manifest()
 
