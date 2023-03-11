@@ -264,6 +264,8 @@ def convert():
     file_name = os.path.basename(file_path)
 
     # Create the files for the zip folder
+    string = textbox.get("1.0","end")
+    QuizName = quizName.get()
     text_to_xml(string, 'res00001.dat', QuizName)
     create_manifest()
 
@@ -340,7 +342,7 @@ def textbox_ctrl_backspace(event):
     ent.delete(custom_index,end_idx)
   else:
     ent.delete("0.0",end_idx)
-  update_linenumbers()
+  delay_update_linenumbers()
 
 def entry_ctrl_backspace(event):
   ent = event.widget
@@ -354,7 +356,7 @@ def entry_ctrl_backspace(event):
     ent.delete(index,end_idx)
   else:
     ent.delete("0.0",end_idx)
-  update_linenumbers()
+  delay_update_linenumbers()
 
 def save_text_to_file(event=None):
   # Get the text from the textbox
@@ -405,47 +407,47 @@ def open_instructions():
   webbrowser.open("https://github.com/JaredTweed/PersonalProjects#readme")
 
 def fontsize_1(event):
-  size = 15
+  size = 5
   textbox.configure(font=("Bahnschrift", size))
   error_screen.configure(font=("Bahnschrift", size))
 
 def fontsize_2(event):
-  size = 20
+  size = 10
   textbox.configure(font=("Bahnschrift", size))
   error_screen.configure(font=("Bahnschrift", size))
 
 def fontsize_3(event):
-  size = 25
+  size = 15
   textbox.configure(font=("Bahnschrift", size))
   error_screen.configure(font=("Bahnschrift", size))
 
 def fontsize_4(event):
-  size = 30
+  size = 20
   textbox.configure(font=("Bahnschrift", size))
   error_screen.configure(font=("Bahnschrift", size))
 
 def fontsize_5(event):
-  size = 35
+  size = 25
   textbox.configure(font=("Bahnschrift", size))
   error_screen.configure(font=("Bahnschrift", size))
 
 def fontsize_6(event):
-  size = 40
+  size = 30
   textbox.configure(font=("Bahnschrift", size))
   error_screen.configure(font=("Bahnschrift", size))
 
 def fontsize_7(event):
-  size = 45
+  size = 35
   textbox.configure(font=("Bahnschrift", size))
   error_screen.configure(font=("Bahnschrift", size))
 
 def fontsize_8(event):
-  size = 50
+  size = 40
   textbox.configure(font=("Bahnschrift", size))
   error_screen.configure(font=("Bahnschrift", size))
 
 def fontsize_9(event):
-  size = 100
+  size = 50
   textbox.configure(font=("Bahnschrift", size))
   error_screen.configure(font=("Bahnschrift", size))
 
