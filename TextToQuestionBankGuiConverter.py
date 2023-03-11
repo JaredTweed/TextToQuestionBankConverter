@@ -125,7 +125,7 @@ def text_to_xml(string, xml_file, quiz_name):
   Check for errors in the text file and exit if any are found.
  
   Args:
-    text_file (str): Path to the text file to convert.
+    string (str): The contents of the text box which will convert.
     xml_file (str): Path to the output XML file.
     quiz_name (str): The name of the quiz to include in the XML file.
   """
