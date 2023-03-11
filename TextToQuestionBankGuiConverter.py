@@ -404,7 +404,7 @@ def on_textbox_focusout(event):
     textbox.configure(text_color='grey')
 
 def open_instructions():
-  webbrowser.open("https://github.com/JaredTweed/PersonalProjects#readme")
+  webbrowser.open("https://github.com/JaredTweed/TextToQuestionBankConverter#readme")
 
 def fontsize_1(event):
   size = 5
