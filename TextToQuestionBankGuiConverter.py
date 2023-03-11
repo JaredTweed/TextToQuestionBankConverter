@@ -44,7 +44,7 @@ def text_to_xml_error_check(string):
   Check the given text file for errors and exit if any are found.
   """
   # Question List
-  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*[mc\s*\n+\s*\n+\s*]*(?=[^\s]+?)', string, re.IGNORECASE))+1
+  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*(mc\s*\n+\s*)*(?=[^\s]+?)', string, re.IGNORECASE))+1
   error = False
   currentLineNumber = 0
 
@@ -125,13 +125,13 @@ def text_to_xml(string, xml_file, quiz_name):
   Check for errors in the text file and exit if any are found.
  
   Args:
-    string (str): The contents of the text box which will convert.
+    text_file (str): Path to the text file to convert.
     xml_file (str): Path to the output XML file.
     quiz_name (str): The name of the quiz to include in the XML file.
   """
 
   # Open the text file and read its contents
-  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*[mc\s*\n+\s*\n+\s*]*(?=[^\s]+?)', string, re.IGNORECASE))+1
+  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*(mc\s*\n+\s*)*(?=[^\s]+?)', string, re.IGNORECASE))+1
     
   # Create the root element
   root = ET.Element('POOL')
@@ -389,7 +389,7 @@ def update_linenumbers(event=None, cursor_index=None):
     cursor_index = "{}.{}".format(cursor_index.split('.')[0], str(int(cursor_index.split('.')[1])+1))
   line_num = cursor_index.split('.')[0]
   string = textbox.get("1.0",cursor_index)
-  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*[mc\s*\n+\s*\n+\s*]*(?=[^\s]+?)', string, re.IGNORECASE))+1
+  numQuestions = len(re.findall(r'[^\s]+?\s*\n+\s*\n+\s*(mc\s*\n+\s*)*(?=[^\s]+?)', string, re.IGNORECASE))+1
   
   linenumbers.configure(text=f"Line: {line_num}\nQn: {numQuestions}")
 
