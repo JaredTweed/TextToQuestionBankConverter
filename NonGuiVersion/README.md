@@ -1,6 +1,6 @@
 # Instructions for TextToQuestionBankConverter
 
-# WARNING, THIS NONGUI VERSION CONTAINS SIGNIFICANT BUGS
+# WARNING: THIS NONGUI VERSION CONTAINS SIGNIFICANT BUGS
 
 ### 1. Download the TextToQuestionBankConverter.exe file into a folder on your Windows computer. 
 The latest version is available at [https://github.com/JaredTweed/TextToQuestionBankConverter/](https://github.com/JaredTweed/TextToQuestionBankConverter/)  
