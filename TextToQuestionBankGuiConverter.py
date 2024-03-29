@@ -390,6 +390,7 @@ def delay_update_linenumbers(event=None):
   root.after(1, update_linenumbers)
 
 def update_linenumbers(event=None, cursor_index=None):
+  check_all_errors()
   if(cursor_index == None):
     cursor_index = textbox.index("insert")
     cursor_index = "{}.{}".format(cursor_index.split('.')[0], str(int(cursor_index.split('.')[1])+1))
@@ -591,8 +592,6 @@ textbox.bind('<Control-BackSpace>', textbox_ctrl_backspace)
 
 textbox.bind("<Key>", delay_update_linenumbers)
 textbox.bind("<Button>", delay_update_linenumbers)
-textbox.bind("<KeyRelease>", lambda event: check_all_errors())  # Added this line for key release (such as typing)
-textbox.bind("<ButtonRelease>", lambda event: check_all_errors())  # Added this line for button release (such as pasting text)
 
 textbox.placeholder = 'Paste your text here'
 textbox.insert("0.0", textbox.placeholder)
