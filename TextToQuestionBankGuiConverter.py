@@ -591,6 +591,8 @@ textbox.bind('<Control-BackSpace>', textbox_ctrl_backspace)
 
 textbox.bind("<Key>", delay_update_linenumbers)
 textbox.bind("<Button>", delay_update_linenumbers)
+textbox.bind("<KeyRelease>", lambda event: check_all_errors())  # Added this line for key release (such as typing)
+textbox.bind("<ButtonRelease>", lambda event: check_all_errors())  # Added this line for button release (such as pasting text)
 
 textbox.placeholder = 'Paste your text here'
 textbox.insert("0.0", textbox.placeholder)
