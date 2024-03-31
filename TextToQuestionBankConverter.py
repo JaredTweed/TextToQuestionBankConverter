@@ -535,6 +535,8 @@ root.resizable(True, True)
 root.minsize(800, 400)
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("green")
+root.title("Text To Question Bank Converter")
+root.iconbitmap('./WorkInProgress/logo.ico')
 
 root.grid_rowconfigure((0), weight=0)
 root.grid_rowconfigure((2), weight=2)
