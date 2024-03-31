@@ -302,7 +302,6 @@ def convert():
 
 
 
-
 def index_to_ctk(string, index):
   custom_index = "{}.{}".format(string.count('\n', 0, index) + 1, index - string.rfind('\n', 0, index)-1) 
   return custom_index
@@ -536,7 +535,7 @@ root.minsize(800, 400)
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("green")
 root.title("Text To Question Bank Converter")
-root.iconbitmap('./WorkInProgress/logo.ico')
+# root.iconbitmap('WorkInProgress/logo.ico')
 
 root.grid_rowconfigure((0), weight=0)
 root.grid_rowconfigure((2), weight=2)
