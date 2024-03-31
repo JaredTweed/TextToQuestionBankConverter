@@ -573,6 +573,8 @@ help_button.grid(row=0, column=4, padx=(2,10), pady=(10,5), sticky="nsew", colum
 quizName = customtkinter.CTkEntry(root, placeholder_text="Quiz Name", font=("Bahnschrift", 20),width=300,height=30,border_width=1,corner_radius=10)
 quizName.grid(row=1, column=0, padx=(10, 2), pady=(10,2), sticky="ew", columnspan = 3)
 quizName.bind('<Control-BackSpace>', entry_ctrl_backspace)
+quizName.bind("<Key>", delay_update_linenumbers)
+quizName.bind("<Button>", delay_update_linenumbers)
 
 quizNameConstraints = Label(master=root, text="Quiz names cannot include\n the following:\t\ /:*?\"<>|", fg="white", background="#222325", font=("Bahnschrift", 10))
 quizNameConstraints.grid(row=1, column=3, padx=(2,2), pady=(10,2), sticky="w")
