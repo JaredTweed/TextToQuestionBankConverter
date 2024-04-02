@@ -2,6 +2,14 @@
 
 <!--![image](https://user-images.githubusercontent.com/59375645/222648200-154b47cb-3a6d-4a9e-97a3-b7aeb357200a.png)
 ![image](https://user-images.githubusercontent.com/59375645/222648109-3090eb3a-add7-4f21-9b2b-8168c2f02656.png)
+
+Notes to self:
+https://stackoverflow.com/questions/48946680/how-to-avoid-the-windows-defender-smartscreen-prevented-an-unrecognized-app-fro
+
+C:\Users\jared\Documents\GithubProjects\TextToQuestionBankConverter_TestFolder\auto-py-to-exe> python .\run.py
+Add the following as additional folders in auto-py-to-exe (found using `pip show customtkinter`):
+C:/Users/jared/AppData/Local/Packages/PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0/LocalCache/local-packages/Python310/site-packages/customtkinter
+C:/Users/jared/Documents/GithubProjects/TextToQuestionBankConverter/images
 -->
 <p align="center">
   <img src="https://user-images.githubusercontent.com/59375645/222648200-154b47cb-3a6d-4a9e-97a3-b7aeb357200a.png" alt="Image 1" style="width: 48%;" />
