@@ -526,6 +526,17 @@ def hide_search(event):
   search.grid_forget()
 
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
 # Main Code
 
 error_line_numbers = []
@@ -537,7 +548,7 @@ root.minsize(800, 400)
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("green")
 root.title("Text To Question Bank Converter")
-# root.iconbitmap('WorkInProgress/logo.ico')
+root.iconbitmap(resource_path('images/logo2.ico'))
 
 root.grid_rowconfigure((0), weight=0)
 root.grid_rowconfigure((2), weight=2)
