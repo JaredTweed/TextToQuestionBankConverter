@@ -219,9 +219,6 @@ def text_to_xml(string, xml_file, quiz_name):
 
 
 def check_all_errors():
-  search.instance = 0
-  search.prevPattern = ''
-  search.iteratingQuestions = False
   global error_line_numbers
   error_line_numbers.clear()
   textbox.tag_remove("start", "1.0", "end")
@@ -517,6 +514,11 @@ def show_search_entry(event):
   search.grid(row=1, column=3, padx=(2,2), pady=(10,2), sticky="ew")
   search.focus()
   search.select_range("0", "end")
+
+  search.instance = 0
+  search.prevPattern = ''
+  search.iteratingQuestions = False
+
   check_all_errors()
 
 def hide_search(event):
