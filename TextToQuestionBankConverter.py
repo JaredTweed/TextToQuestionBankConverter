@@ -51,7 +51,7 @@ def text_to_xml_error_check(string):
   error_screen.configure(state="normal")
 
   if(string.isspace() == True or string == textbox.placeholder+'\n'):
-    error_screen.insert("end", 'No text is provided to convert.\n\n')
+    error_screen.insert("end", 'No text is provided to convert. Format the question like so:\n\nSelect the capital of France?\nLondon\n*Paris\nRome\nBerlin\n\n')
     error = True
   else:
     lines = io.StringIO(string)
@@ -93,7 +93,7 @@ def text_to_xml_error_check(string):
         currentLineNumber += 1
       highlight_end = currentLineNumber
 
-      # Print error # tkinter --> tag_add(tag, i,j) method
+      # Print and highlight the errors
       if (a == 0 or a == 1 or (not answerSelected) or multipleAnswersSelected or answerIsEmpty or questionText.text.startswith('*')):
         error_screen.insert("end", 'ERROR IN QUESTION {}:\n'.format(i+1))
         if(a == 0):
@@ -114,6 +114,7 @@ def text_to_xml_error_check(string):
         textbox.tag_add("start", f"{highlight_start}.0", f"{highlight_end}.0")
         textbox.tag_config("start", background= "dark red", foreground= "white")
         error_line_numbers.append(f"{highlight_start}.99")
+        textbox.tag_raise("sel")
 
   # Quit program
   if(error):
