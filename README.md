@@ -23,17 +23,18 @@ To download the program, click [this link](https://raw.githubusercontent.com/Jar
 
 ## 2. Format your multiple-choice questions
 Format them consistent with the following examples. Leave a blank line between questions. Mark the correct answer with an asterisk:  
-  
+
+```
 Justin sees an illogical argument for a particular belief. If Justin likes this belief and wants it to be true, there’s a good chance he'll find it difficult to notice the problem with the argument. This effect is called  
 Parkinson's law  
 The Peter Principle  
-\*Belief bias  
+*Belief bias  
 
 Which of the following is explicitly making a claim about cause?  
-\*If you learn to manage your stress, that will make you more likely to get promoted to a management position  
+*If you learn to manage your stress, that will make you more likely to get promoted to a management position  
 People who supervise more people at work tend to have lower levels of stress  
 People who exercise regularly tend to have fewer medical problems  
-
+```
 ## 3) Open the conversion program
 
 ## 4) Type in a title for your quiz 
