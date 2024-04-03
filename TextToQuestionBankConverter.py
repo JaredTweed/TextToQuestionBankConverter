@@ -51,7 +51,7 @@ def text_to_xml_error_check(string):
   error_screen.configure(state="normal")
 
   if(string.isspace() == True or string == textbox.placeholder+'\n'):
-    error_screen.insert("end", 'No text is provided to convert. Format the question like so:\n\nSelect the capital of France?\nLondon\n*Paris\nRome\nBerlin\n\n')
+    error_screen.insert("end", 'No text is provided to convert. Format each question like so:\n\nSelect the capital of France?\nLondon\n*Paris\nRome\nBerlin\n\n')
     error = True
   else:
     lines = io.StringIO(string)
@@ -480,6 +480,7 @@ def highlight_instance(pattern, instance):
 
     textbox.tag_add("search tag", tkinter_index_start, tkinter_index_end)
     textbox.tag_config("search tag", background= "orange", foreground= "white")
+    textbox.tag_raise("search tag")
 
     update_linenumbers(cursor_index=tkinter_index_end)
 
@@ -496,7 +497,6 @@ def _search_text():
     search.instance = 0
     search.prevPattern = pattern
   root.after(2, lambda: highlight_instance(pattern, search.instance))
-  textbox.tag_raise("search tag")
 
 def iterate_wrong_questions(event):
   if(len(error_line_numbers) != 0):
