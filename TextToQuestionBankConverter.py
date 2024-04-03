@@ -381,6 +381,7 @@ def open_textfile():
   textbox.delete("1.0", "end")
   textbox.configure(text_color='white')
   textbox.insert("1.0", text)
+  check_all_errors()
 
 def delay_update_linenumbers(event=None):
   # This delays the line number update until the cursor has already moved.
