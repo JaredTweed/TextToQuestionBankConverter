@@ -5,6 +5,7 @@
 
 Notes to self:
 https://stackoverflow.com/questions/48946680/how-to-avoid-the-windows-defender-smartscreen-prevented-an-unrecognized-app-fro
+https://www.microsoft.com/en-us/wdsi/submission/952dbdcd-d929-44c9-a509-6e2f81773204
 
 C:\Users\jared\Documents\GithubProjects\TextToQuestionBankConverter_TestFolder\auto-py-to-exe> python .\run.py
 Add the following as additional folders in auto-py-to-exe (found using `pip show customtkinter`):
