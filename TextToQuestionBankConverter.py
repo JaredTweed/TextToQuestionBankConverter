@@ -16,8 +16,6 @@ import shutil
 import io
 import webbrowser
 
-currentTextfile = None
-
 def write_time(root):
   """
   Add a 'CREATED' and 'UPDATED' element with the current time to the given root element.
@@ -254,17 +252,19 @@ def check_all_errors():
   # Check for errors in the textbox
   hasError = text_to_xml_error_check(string)
 
-  return hasError == False and nameIsValid
+  global isReadyToConvert
+  isReadyToConvert = (not hasError and nameIsValid) and textbox.get("1.0", "end") != '' and textbox.get("1.0", "end") != textbox.placeholder+'\n'
+  updateQuestionBankButton()
+  return isReadyToConvert
 
 def convert():
-
-  errors_present = check_all_errors()
-
   # Create the question bank
-  if(errors_present and textbox.get("1.0", "end") != '' and textbox.get("1.0", "end") != textbox.placeholder+'\n'):
+  if(check_all_errors()):
     
     # Choose a location for the zip file
-    file_path = filedialog.asksaveasfilename(initialfile=quizName.get(), defaultextension=".zip", filetypes=[("zip file", "*.zip")])
+    global currentTextfile
+    initial_file = quizName.get() if quizName.get() else currentTextfile.split('/')[-1].split('.')[0] if currentTextfile else 'quiz'
+    file_path = filedialog.asksaveasfilename(initialfile=initial_file, defaultextension=".zip", filetypes=[("zip file", "*.zip")])
     with zipfile.ZipFile(file_path, 'w') as zip_file:
       pass
     file_name = os.path.basename(file_path)
@@ -290,7 +290,6 @@ def convert():
     error_screen.configure(state="normal")
     error_screen.insert("end", "Zip file created.\n")
     error_screen.configure(state="disabled")
-
 
 
 
@@ -458,6 +457,13 @@ def on_textbox_focusout(event):
 def open_instructions():
   webbrowser.open("https://github.com/JaredTweed/TextToQuestionBankConverter#readme")
 
+def updateQuestionBankButton():
+  global isReadyToConvert
+  global questionBankButton
+  if(isReadyToConvert): questionBankButton = customtkinter.CTkButton(master=root, text="Create Question Bank", width=100, font=("Bahnschrift", 20), command=convert)
+  else: questionBankButton = Label(master=root, text="Fix Errors To\nCreate Question Bank", fg="white", background="#222325", font=("Bahnschrift", 18))
+  questionBankButton.grid(row=3, column=2, sticky="nsew", padx=(2,2), pady=(2,10), rowspan = 2, columnspan = 2)
+
 def fontsize_1(event):
   size = 5
   textbox.configure(font=("Bahnschrift", size))
@@ -589,6 +595,8 @@ def resource_path(relative_path):
 # Main Code
 
 error_line_numbers = []
+currentTextfile = None
+isReadyToConvert = False
 
 root = customtkinter.CTk()
 root.geometry("800x400")
@@ -681,7 +689,6 @@ saveTxtButton.grid(row=3, column=1, sticky="nsew", padx=(2,2), pady=(2,2), colum
 openTxtButton = customtkinter.CTkButton(master=root, text="Open Textfile", font=("Bahnschrift", 20), command=open_textfile)
 openTxtButton.grid(row=4, column=1, sticky="nsew", padx=(2,2), pady=(2,10), columnspan = 1)
 
-questionBankButton = customtkinter.CTkButton(master=root, text="Create Question Bank", width=100, font=("Bahnschrift", 20), command=convert)
-questionBankButton.grid(row=3, column=2, sticky="nsew", padx=(2,2), pady=(2,10), rowspan = 2, columnspan = 2)
+updateQuestionBankButton()
 
 root.mainloop()
