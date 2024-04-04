@@ -16,6 +16,8 @@ import shutil
 import io
 import webbrowser
 
+currentTextfile = None
+
 def write_time(root):
   """
   Add a 'CREATED' and 'UPDATED' element with the current time to the given root element.
@@ -361,27 +363,70 @@ def entry_ctrl_backspace(event):
     ent.delete("0.0",end_idx)
   delay_update_linenumbers()
 
-def save_text_to_file(event=None):
+def save_text_to_new_file(event=None):
+  print("Saving text to new file")
+
   # Get the text from the textbox
   text = textbox.get("1.0", "end")
 
   # Write the text to the chosen file
   if(text != ''):
     # Open a file dialog to choose the file path and name to save to
-    file_path = filedialog.asksaveasfilename(initialfile=quizName.get(), defaultextension=".txt", filetypes=[("text file", "*.txt")])
+    global currentTextfile
+    initial_file = quizName.get() if quizName.get() else currentTextfile.split('/')[-1].split('.')[0] if currentTextfile else 'quiz'
+    file_path = filedialog.asksaveasfilename(initialfile=initial_file, defaultextension=".txt", filetypes=[("text file", "*.txt")])
 
     with open(file_path, "w") as file:
       file.write(text)
 
+    # global currentTextfile
+    currentTextfile = file_path
+    root.title(f"Text To Question Bank Converter - {currentTextfile}")
+
+def save_current_textfile(event=None):
+  if(currentTextfile == None): save_text_to_new_file()
+
+  # Get the text from the textbox
+  text = textbox.get("1.0", "end")
+
+  # Write the text to the chosen file
+  if(text != ''):
+    with open(currentTextfile, "w") as file:
+      file.write(text)
+
+def is_textbox_same_as_file():
+  if(currentTextfile == None): return False
+  with open(currentTextfile, "r") as file:
+    file_text = file.read()
+  textbox_text = textbox.get("1.0", "end")
+  return file_text == textbox_text
+
+def show_save_status_in_title():
+  if(currentTextfile == None):
+    root.title("Text To Question Bank Converter")
+  elif(is_textbox_same_as_file()):
+    root.title(f"Text To Question Bank Converter - {currentTextfile}")
+  else:
+    root.title(f"Text To Question Bank Converter - {currentTextfile}*")
+
 def open_textfile():
   file_path = filedialog.askopenfilename(defaultextension=".txt", filetypes=[("text file", "*.txt")])
+  
   with open(file_path, "r") as file:
       text = file.read()
-  # Do something with the text, such as display it in a text box
+
+  # print(currentTextfile)
+  global currentTextfile
+  currentTextfile = file_path
+  root.title(f"Text To Question Bank Converter - {currentTextfile}")
+  # print(currentTextfile)
+
+  # Delete previous text and display the textfile in the text box
   textbox.delete("1.0", "end")
   textbox.configure(text_color='white')
   textbox.insert("1.0", text)
   check_all_errors()
+  save_current_textfile()
 
 def delay_update_linenumbers(event=None):
   # This delays the line number update until the cursor has already moved.
@@ -389,6 +434,8 @@ def delay_update_linenumbers(event=None):
 
 def update_linenumbers(event=None, cursor_index=None):
   check_all_errors()
+  show_save_status_in_title()
+
   if(cursor_index == None):
     cursor_index = textbox.index("insert")
     cursor_index = "{}.{}".format(cursor_index.split('.')[0], str(int(cursor_index.split('.')[1])+1))
@@ -549,8 +596,8 @@ root.resizable(True, True)
 root.minsize(800, 400)
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("green")
-root.title("Text To Question Bank Converter")
-root.iconbitmap(resource_path('images/logo2.ico'))
+root.title(f"Text To Question Bank Converter - {currentTextfile}" if currentTextfile else "Text To Question Bank Converter")
+root.iconbitmap(resource_path('images/logo.ico'))
 
 root.grid_rowconfigure((0), weight=0)
 root.grid_rowconfigure((2), weight=2)
@@ -559,7 +606,8 @@ root.grid_columnconfigure(1, minsize=190)
 root.grid_columnconfigure(2, weight=1)
 root.grid_columnconfigure(4, weight=2)
 
-root.bind('<Control-s>', save_text_to_file)
+root.bind('<Control-s>', save_current_textfile)
+root.bind('<Control-S>', save_text_to_new_file)
 root.bind('<Control-f>', show_search_entry)
 
 root.bind('<Control-KeyPress-1>', fontsize_1)
@@ -627,7 +675,7 @@ error_screen.configure(state="disabled")
 linenumbers = Label(master=root, text="Line: 1\nQn: 1", fg="white", background="#222325", font=("Bahnschrift", 20), anchor="w")
 linenumbers.grid(row=3, column=0, sticky="ew", padx=(10,2), pady=(2,10), rowspan = 2, columnspan = 1)
 
-saveTxtButton = customtkinter.CTkButton(master=root, text="Save Textbox As Textfile", width=250, font=("Bahnschrift", 20), command=save_text_to_file)
+saveTxtButton = customtkinter.CTkButton(master=root, text="Save Textbox As Textfile", width=250, font=("Bahnschrift", 20), command=save_text_to_new_file)
 saveTxtButton.grid(row=3, column=1, sticky="nsew", padx=(2,2), pady=(2,2), columnspan = 1)
 
 openTxtButton = customtkinter.CTkButton(master=root, text="Open Textfile", font=("Bahnschrift", 20), command=open_textfile)
