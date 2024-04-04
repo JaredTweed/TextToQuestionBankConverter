@@ -39,7 +39,7 @@ People who exercise regularly tend to have fewer medical problems
 Write this in the "Quiz Name" space in the top left of the conversion program 
 
 ## 4) Input your questions by doing one of the following:
-Note that the questions with errors will be highlighted in red.
+Note that the questions with errors will be highlighted in red.  
 \- Type or paste your test questions into the big textbox on the left side of the screen.  
 
 \- Or instead, write your test questions in your word processor (e.g., Microsoft Word). Afterwards, save your word processor file as a textfile on your computer, and then click the "Open Textfile" option at the bottom left of the conversion program to select that saved file from your default file manager application.  
