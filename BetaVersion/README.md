@@ -40,9 +40,9 @@ Write this in the "Quiz Name" space in the top left of the conversion program
 
 ## 4) Input your questions by doing one of the following:
 Note that the questions with errors will be highlighted in red.  
-\- Type or paste your test questions into the big textbox on the left side of the screen.  
 
-\- Or instead, write your test questions in your word processor (e.g., Microsoft Word). Afterwards, save your word processor file as a textfile on your computer, and then click the "Open Textfile" option at the bottom left of the conversion program to select that saved file from your default file manager application.  
+Type or paste your test questions into the big textbox on the left side of the screen. Or instead, write your test questions in your word processor (e.g., Microsoft Word). Afterwards, save your word processor file as a textfile on your computer, and then click the "Open Textfile" option at the bottom left of the conversion program to select that saved file from your default file manager application.  
+
 ![image](https://user-images.githubusercontent.com/59375645/222649652-495ab0c6-50dc-4471-a354-186b22ba65fc.png)
 
 ## 5) Click on "Create Question Bank" 
@@ -65,8 +65,8 @@ To change the font size displayed in the conversion program press a digit key (1
 
 Helpful Tip: When in the main textbox, *Ctrl+Down Arrow* moves cursor to the next question thereby allowing you to review questions quickly.  
 
-*Ctrl+S:* Saves the textbox contents as a textfile.
-*Ctrl+Shift+S:* Saves the textbox contents as a textfile with the name you choose.
+*Ctrl+S:* Saves the textbox contents as a textfile.  
+*Ctrl+Shift+S:* Saves the textbox contents as a textfile with the name you choose.  
 
 
 ## Licensing: 
