@@ -457,57 +457,29 @@ def on_textbox_focusout(event):
 def open_instructions():
   webbrowser.open("https://github.com/JaredTweed/TextToQuestionBankConverter#readme")
 
-def updateQuestionBankButton():
-  global isReadyToConvert
-  global questionBankButton
-  if(isReadyToConvert): questionBankButton = customtkinter.CTkButton(master=root, text="Create Question Bank", width=100, font=("Bahnschrift", 20), command=convert)
-  else: questionBankButton = Label(master=root, text="Fix Errors To\nCreate Question Bank", fg="white", background="#222325", font=("Bahnschrift", 18))
-  questionBankButton.grid(row=3, column=2, sticky="nsew", padx=(2,2), pady=(2,10), rowspan = 2, columnspan = 2)
-
-def fontsize_1(event):
-  size = 5
+def setFontSize(size):
   textbox.configure(font=("Bahnschrift", size))
   error_screen.configure(font=("Bahnschrift", size))
 
-def fontsize_2(event):
-  size = 10
-  textbox.configure(font=("Bahnschrift", size))
-  error_screen.configure(font=("Bahnschrift", size))
+def zoom(event):
+    if event.delta > 0:
+        font_size = textbox.cget("font")[1]
+        if font_size < 100:
+            setFontSize(font_size + 2)
+    elif event.delta < 0:
+        font_size = textbox.cget("font")[1]
+        if font_size > 5:
+            setFontSize(font_size - 2)
 
-def fontsize_3(event):
-  size = 15
-  textbox.configure(font=("Bahnschrift", size))
-  error_screen.configure(font=("Bahnschrift", size))
-
-def fontsize_4(event):
-  size = 20
-  textbox.configure(font=("Bahnschrift", size))
-  error_screen.configure(font=("Bahnschrift", size))
-
-def fontsize_5(event):
-  size = 25
-  textbox.configure(font=("Bahnschrift", size))
-  error_screen.configure(font=("Bahnschrift", size))
-
-def fontsize_6(event):
-  size = 30
-  textbox.configure(font=("Bahnschrift", size))
-  error_screen.configure(font=("Bahnschrift", size))
-
-def fontsize_7(event):
-  size = 35
-  textbox.configure(font=("Bahnschrift", size))
-  error_screen.configure(font=("Bahnschrift", size))
-
-def fontsize_8(event):
-  size = 40
-  textbox.configure(font=("Bahnschrift", size))
-  error_screen.configure(font=("Bahnschrift", size))
-
-def fontsize_9(event):
-  size = 50
-  textbox.configure(font=("Bahnschrift", size))
-  error_screen.configure(font=("Bahnschrift", size))
+def fontsize_1(event):setFontSize(5)
+def fontsize_2(event):setFontSize(10)
+def fontsize_3(event):setFontSize(15)
+def fontsize_4(event):setFontSize(20)
+def fontsize_5(event):setFontSize(25)
+def fontsize_6(event):setFontSize(30)
+def fontsize_7(event):setFontSize(35)
+def fontsize_8(event):setFontSize(40)
+def fontsize_9(event):setFontSize(45)
 
 def escape_regex(text):
   special_chars = ['\\', '.', '*', '+', '?', '{', '}', '[', ']', '|', '(', ')', '^', '$']
@@ -601,7 +573,7 @@ isReadyToConvert = False
 root = customtkinter.CTk()
 root.geometry("800x400")
 root.resizable(True, True)
-root.minsize(800, 400)
+root.minsize(805, 400)
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("green")
 root.title(f"Text To Question Bank Converter - {currentTextfile}" if currentTextfile else "Text To Question Bank Converter")
@@ -610,9 +582,10 @@ root.iconbitmap(resource_path('images/logo.ico'))
 root.grid_rowconfigure((0), weight=0)
 root.grid_rowconfigure((2), weight=2)
 root.grid_rowconfigure((3,4), weight=0)
+# root.grid_columnconfigure(0, minsize=110)
 root.grid_columnconfigure(1, minsize=190)
 root.grid_columnconfigure(2, weight=1)
-root.grid_columnconfigure(4, weight=2)
+root.grid_columnconfigure(4, weight=1, minsize=250)
 
 root.bind('<Control-s>', save_current_textfile)
 root.bind('<Control-S>', save_text_to_new_file)
@@ -628,6 +601,8 @@ root.bind('<Control-KeyPress-7>', fontsize_7)
 root.bind('<Control-KeyPress-8>', fontsize_8)
 root.bind('<Control-KeyPress-9>', fontsize_9)
 root.bind('<Control-KeyPress-0>', fontsize_1)
+
+root.bind('<Control-MouseWheel>', zoom)
 
 # Row 0
 
@@ -688,6 +663,13 @@ saveTxtButton.grid(row=3, column=1, sticky="nsew", padx=(2,2), pady=(2,2), colum
 
 openTxtButton = customtkinter.CTkButton(master=root, text="Open Textfile", font=("Bahnschrift", 20), command=open_textfile)
 openTxtButton.grid(row=4, column=1, sticky="nsew", padx=(2,2), pady=(2,10), columnspan = 1)
+
+def updateQuestionBankButton():
+  global isReadyToConvert
+  global questionBankButton
+  if(isReadyToConvert): questionBankButton = customtkinter.CTkButton(master=root, text="Create Question Bank", width=100, font=("Bahnschrift", 20), command=convert)
+  else: questionBankButton = Label(master=root, text="Fix Errors To\nCreate Question Bank", fg="white", background="#222325", font=("Bahnschrift", 16))
+  questionBankButton.grid(row=3, column=2, sticky="nsew", padx=(2,2), pady=(2,10), rowspan = 2, columnspan = 2)
 
 updateQuestionBankButton()
 

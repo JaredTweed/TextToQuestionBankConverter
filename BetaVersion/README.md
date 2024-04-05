@@ -53,7 +53,7 @@ Note that the questions with errors will be highlighted in red.
 The testbank will be in Blackboard format, so you may need to select that option when you import it into Moodle (or whichever Learning Management System you use).  
 
 ## Font size: 
-To change the font size displayed in the conversion program press a digit key (1 through 9) while holding the Ctrl key on your keyboard.
+To change the font size displayed in the conversion program press a digit key (1 through 9) or scroll the mouse wheel while holding the Ctrl key on your keyboard. You can also pinch the trackpad.
 
 ## Searching
 **Ctrl+F:** Opens a search bar to the right of the quiz name input box.  
