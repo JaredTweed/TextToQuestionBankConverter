@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Text To Question Bank Converter</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #222325;
+      color: white;
+      font-family: 'Bahnschrift', sans-serif;
+    }
+
+    header,
+    footer {
+      background: #1d1e20;
+      padding: 10px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .main-wrapper {
+      display: flex;
+      height: calc(100vh - 60px);
+      /* room for header/footer if desired */
+    }
+
+    /* Left column: quiz name + editor */
+    .left-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      gap: 10px;
+      box-sizing: border-box;
+      overflow: hidden;
+      /* so scroll stays in text area, not entire column */
+    }
+
+    .controls {
+      background: #2c2d30;
+      border-radius: 5px;
+      padding: 10px;
+    }
+
+    .controls input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px;
+      margin-bottom: 5px;
+      border: none;
+      border-radius: 3px;
+      font-size: 16px;
+      font-family: 'Bahnschrift', sans-serif;
+    }
+
+    .quizNameConstraints {
+      font-size: 12px;
+      color: #ccc;
+    }
+
+    .editor-container {
+      background: #2c2d30;
+      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+      padding: 10px;
+    }
+
+    .editor-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .linenumbers {
+      font-size: 14px;
+      line-height: 1.2em;
+    }
+
+    button {
+      background: #444;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      font-size: 16px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #666;
+      cursor: not-allowed;
+    }
+
+    /* The container for text and highlight layers */
+    .text-container {
+      position: relative;
+      flex: 1;
+      border: 1px solid #444;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    /* The highlight layer behind the textarea */
+    .highlight-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 0;
+      pointer-events: none;
+      font-family: 'Bahnschrift', sans-serif;
+      font-size: 15px;
+      line-height: 1.2em;
+      /* single spacing */
+      padding: 5px;
+      box-sizing: border-box;
+      white-space: pre-wrap;
+      overflow: hidden;
+      /* no scrollbar, synced via JS */
+    }
+
+    /* Make error lines more visible (light red text + semi-transparent background). */
+    .highlight-error-line {
+      background: rgba(255, 0, 0, 0.75);
+      color: #ffaaaa;
+    }
+
+    /* The text area, placed above the highlight layer */
+    #inputText {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      background: transparent;
+      color: white;
+      border: none;
+      outline: none;
+      resize: none;
+      width: 100%;
+      height: 100%;
+      font-size: 15px;
+      font-family: 'Bahnschrift', sans-serif;
+      line-height: 1.2em;
+      padding: 5px;
+      box-sizing: border-box;
+      overflow: auto;
+    }
+
+    /* Error box on the right column */
+    .error-box {
+      width: 350px;
+      background: #2c2d30;
+      border-radius: 5px;
+      margin: 10px;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #444;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Text To Question Bank Converter</h1>
+    <button onclick="openInstructions()">Help</button>
+  </header>
+
+  <div class="main-wrapper">
+    <!-- Left side: controls + editor -->
+    <div class="left-column">
+      <!-- Quiz name controls -->
+      <div class="controls">
+        <input type="text" id="quizName" placeholder="Quiz Name" />
+        <div class="quizNameConstraints">
+          Quiz names cannot include the following: \/:*?"&lt;&gt;|
+        </div>
+      </div>
+
+      <!-- Editor area -->
+      <div class="editor-container">
+        <div class="editor-controls">
+          <button onclick="saveTextAsFile()">Save Text</button>
+          <button onclick="openTextFile()">Open Textfile</button>
+          <span id="lineInfo" class="linenumbers">Line: 1<br>Qn: 1</span>
+          <button id="createQB" onclick="convert()">Create Question Bank</button>
+        </div>
+        <div class="text-container">
+          <div class="highlight-layer" id="highlightLayer"></div>
+          <textarea id="inputText"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right side: error messages -->
+    <div id="errorMessages" class="error-box">
+      Error explanations for the input text will go here if question bank creation fails.
+    </div>
+  </div>
+
+  <footer></footer>
+
+  <!-- JSZip for zipping files -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script>
+    // Global
+    let errorLineNumbers = [];
+    let isReadyToConvert = false;
+    let placeholder = 'Paste your text here';
+
+    const inputText = document.getElementById('inputText');
+    const quizNameInput = document.getElementById('quizName');
+    const errorMessages = document.getElementById('errorMessages');
+    const highlightLayer = document.getElementById('highlightLayer');
+    const lineInfo = document.getElementById('lineInfo');
+    const createQBButton = document.getElementById('createQB');
+
+    // Placeholder behavior
+    inputText.value = placeholder;
+    inputText.style.color = 'grey';
+
+    inputText.addEventListener('focus', () => {
+      if (inputText.value.trim() === placeholder) {
+        inputText.value = '';
+        inputText.style.color = 'white';
+      }
+    });
+
+    inputText.addEventListener('blur', () => {
+      if (inputText.value.trim() === '') {
+        inputText.value = placeholder;
+        inputText.style.color = 'grey';
+      }
+    });
+
+    // Keep highlight layer and line info synced
+    inputText.addEventListener('scroll', syncScroll);
+    inputText.addEventListener('input', updateUI);
+    // Update line/ques count on arrow keys, etc.
+    inputText.addEventListener('keyup', updateUI);
+    // Update line/ques count on mouse click
+    inputText.addEventListener('mouseup', updateUI);
+
+    quizNameInput.addEventListener('input', updateUI);
+
+    function syncScroll() {
+      highlightLayer.scrollTop = inputText.scrollTop;
+      highlightLayer.scrollLeft = inputText.scrollLeft;
+    }
+
+    // =========== Update main UI elements =============
+    function updateUI() {
+      const text = getCleanText();
+      const quizName = quizNameInput.value.trim() || 'Quiz';
+
+      // Validate quiz name
+      const invalidChars = [...quizName].filter(ch => '\\/:*?"<>|'.includes(ch));
+      let nameIsValid = invalidChars.length === 0;
+
+      // Clear previous errors and highlights
+      errorMessages.textContent = '';
+      highlightLayer.innerHTML = '';
+
+      // If quiz name invalid
+      if (!nameIsValid) {
+        invalidChars.forEach(ch => {
+          errorMessages.textContent += `'${ch}' is not allowed in a quiz name.\n`;
+        });
+        errorMessages.textContent += "Enter a valid name for your quiz.\n\n\n";
+      }
+
+      // Check text errors & highlight
+      const { hasError, highlightedLines } = checkTextErrors(text);
+      highlightTextLines(text, highlightedLines);
+
+      // Determine if ready
+      isReadyToConvert = !hasError && nameIsValid && text.trim() !== '' && text.trim() !== placeholder;
+      createQBButton.disabled = !isReadyToConvert;
+
+      // Update line & question count
+      updateLineQuestionCount();
+    }
+
+    function getCleanText() {
+      let val = inputText.value;
+      if (val.trim() === placeholder) {
+        return '';
+      }
+      return val;
+    }
+
+    // =========== Line & Question Number logic ===========
+    function updateLineQuestionCount() {
+      // 1) Cursor line
+      let caretPos = inputText.selectionStart || 0;
+      let textBeforeCaret = getCleanText().substring(0, caretPos);
+      let lineNumber = (textBeforeCaret.match(/\n/g) || []).length + 1;
+
+      // 2) Current question number:
+      //    Parse the text up to the caret's line using the same logic as "checkTextErrors",
+      //    but we ignore actual errors and only count how many questions we fully or partially read.
+      let fullText = getCleanText();
+      let lineEndIndex = fullText.indexOf('\n', caretPos);
+      if (lineEndIndex === -1) lineEndIndex = fullText.length;
+      let textUpToLineEnd = fullText.substring(0, lineEndIndex);
+
+      // Now use textUpToLineEnd instead of textBeforeCaret:
+      let currentQ = getQuestionNumberAtCaret(textUpToLineEnd);
+
+      // let currentQ = getQuestionNumberAtCaret(textBeforeCaret);
+
+      lineInfo.innerHTML = `Line: ${lineNumber}<br>Qn: ${currentQ}`;
+    }
+
+    // Parse text up to caret to find how many questions we've encountered.
+    function getQuestionNumberAtCaret(textUpToCaret) {
+      // If there's no text yet, consider user to be at Qn 1
+      if (!textUpToCaret.trim()) return 1;
+
+      let lines = textUpToCaret.split('\n');
+      let idx = 0;
+      let currentLine = 0;
+      let qCount = 0;
+
+      while (idx < lines.length) {
+        // skip blank or "mc" lines
+        while (idx < lines.length &&
+          (lines[idx].trim() === '' ||
+            (lines[idx].toLowerCase().startsWith('mc') && lines[idx].substring(2).trim() === ''))
+        ) {
+          idx++;
+          currentLine++;
+        }
+        if (idx >= lines.length) break;
+
+        // We found a question line => this is a new question
+        qCount++;
+        idx++;
+        currentLine++;
+
+        // Skip answers until a blank line
+        while (idx < lines.length && lines[idx].trim() !== '') {
+          idx++;
+          currentLine++;
+        }
+
+        // skip the blank lines after answers
+        while (idx < lines.length && lines[idx].trim() === '') {
+          idx++;
+          currentLine++;
+        }
+      }
+
+      // If we've found zero questions, default to 1. Otherwise, qCount is how many we encountered so far.
+      return qCount || 1;
+    }
+
+    // =========== Error Checking & Highlighting ===========
+    function checkTextErrors(string) {
+      let hasError = false;
+      errorLineNumbers = [];
+
+      if (string.trim() === '') {
+        errorMessages.textContent =
+          'No text is provided to convert. Format each question like so:\n\n' +
+          'Select the capital of France?\nLondon\n*Paris\nRome\nBerlin\n\n';
+        hasError = true;
+        return { hasError, highlightedLines: [] };
+      }
+
+      const lines = string.split('\n');
+      let idx = 0;
+      let currentLine = 0;
+      let highlightedLines = [];
+
+      // We'll count how many question blocks exist in the entire text
+      // and check each question block for formatting errors.
+      // This is the same logic as the Python code.
+      // We'll keep reading until we can't parse more questions.
+      let questionIndex = 0;
+      while (true) {
+        // skip blank or "mc" lines
+        while (idx < lines.length &&
+          (lines[idx].trim() === '' ||
+            (lines[idx].toLowerCase().startsWith('mc') && lines[idx].substring(2).trim() === ''))) {
+          idx++; currentLine++;
+        }
+        if (idx >= lines.length) break;
+
+        questionIndex++;
+        let questionLineNumber = currentLine + 1;
+        let questionText = lines[idx].trim();
+        idx++;
+        currentLine++;
+
+        // Gather answers
+        let aCount = 0;
+        let answerSelected = false;
+        let multipleAnswersSelected = false;
+        let answerIsEmpty = false;
+
+        let highlightStart = questionLineNumber;
+        let highlightEnd = questionLineNumber;
+
+        while (idx < lines.length && lines[idx].trim() !== '') {
+          aCount++;
+          let ans = lines[idx].trim();
+          highlightEnd = currentLine + 1;
+
+          if (ans.startsWith('*')) {
+            if (answerSelected) multipleAnswersSelected = true;
+            answerSelected = true;
+            if (ans === '*') answerIsEmpty = true;
+          }
+          idx++; currentLine++;
+        }
+
+        // skip blank lines after answers
+        while (idx < lines.length && lines[idx].trim() === '') {
+          idx++; currentLine++;
+        }
+
+        // Build an error message if needed
+        let qError = false;
+        let errText = `ERROR IN QUESTION ${questionIndex}:\n`;
+
+        if (questionText.startsWith('*')) {
+          qError = true;
+          errText += `Begins with a '*' character.\n`;
+        }
+        if (aCount === 0) {
+          qError = true;
+          errText += `No answer options provided.\n`;
+        } else if (aCount === 1) {
+          qError = true;
+          errText += `Only one answer option provided.\n`;
+        } else if (!answerSelected) {
+          qError = true;
+          errText += `No answer selected.\n`;
+        } else if (multipleAnswersSelected) {
+          qError = true;
+          errText += `Multiple answers selected.\n`;
+        } else if (answerIsEmpty) {
+          qError = true;
+          errText += `Has a blank answer option.\n`;
+        }
+        if (qError) {
+          hasError = true;
+          errText += `Question ${questionIndex}: ${questionText}\n\n\n`;
+          errorMessages.textContent += errText;
+
+          // highlight lines from highlightStart to highlightEnd
+          for (let hl = highlightStart; hl <= highlightEnd; hl++) {
+            highlightedLines.push(hl);
+          }
+        }
+
+        // If we can parse another question, the loop continues
+        // otherwise we break once we've read all lines.
+        if (idx >= lines.length) break;
+      }
+
+      if (hasError) {
+        errorMessages.textContent +=
+          "Output file will not be produced. Fix input text and try again.\n";
+      }
+
+      return { hasError, highlightedLines };
+    }
+
+    function highlightTextLines(text, errorLines) {
+      const lines = text.split('\n');
+      let html = '';
+      for (let i = 0; i < lines.length; i++) {
+        let lineNum = i + 1;
+        let lineEscaped = escapeHTML(lines[i]);
+        if (errorLines.includes(lineNum)) {
+          html += `<span class="highlight-error-line">${lineEscaped}</span><br>`;
+        } else {
+          html += `<span>${lineEscaped}</span><br>`;
+        }
+      }
+      highlightLayer.innerHTML = html;
+    }
+
+    function escapeHTML(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    // =========== "Create Question Bank" ===========
+    async function convert() {
+      if (!isReadyToConvert) return;
+      const text = getCleanText();
+      const quizName = quizNameInput.value.trim() || 'Quiz';
+
+      // Generate XML files in memory
+      const resXml = generateResXml(text, quizName);
+      const manifestXml = generateManifest();
+
+      // Create ZIP
+      const zip = new JSZip();
+      zip.file("imsmanifest.xml", manifestXml);
+      zip.file("res00001.dat", resXml);
+
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = quizName + ".zip";
+      a.click();
+
+      errorMessages.textContent += "Zip file created.\n";
+    }
+
+    function generateManifest() {
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="man00001">
+  <organization default="toc00001">
+    <tableofcontents identifier="toc00001"/>
+  </organization>
+  <resources>
+    <resource baseurl="res00001" file="res00001.dat" identifier="res00001" type="assessment/x-bb-pool"/>
+  </resources>
+</manifest>`;
+    }
+
+    function generateResXml(string, quizName) {
+      const lines = string.split('\n');
+      let idx = 0;
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<POOL>\n`;
+      xml += `  <COURSEID value="IMPORT"/>\n`;
+      xml += `  <TITLE value="${escapeXML(quizName)}"/>\n`;
+      xml += `  <DESCRIPTION>\n    <TEXT>Created by the Blackboard Quiz Generator</TEXT>\n  </DESCRIPTION>\n`;
+      xml += writeTimeXml('  ');
+
+      // parse how many questions
+      let questionCount = 0;
+      {
+        // quick parse just to count blocks
+        let tempIdx = 0;
+        while (tempIdx < lines.length) {
+          while (tempIdx < lines.length &&
+            (lines[tempIdx].trim() === '' ||
+              (lines[tempIdx].toLowerCase().startsWith('mc') && lines[tempIdx].substring(2).trim() === ''))) {
+            tempIdx++;
+          }
+          if (tempIdx < lines.length) {
+            questionCount++;
+            // skip question line
+            tempIdx++;
+            // skip answers
+            while (tempIdx < lines.length && lines[tempIdx].trim() !== '') {
+              tempIdx++;
+            }
+            // skip blank lines
+            while (tempIdx < lines.length && lines[tempIdx].trim() === '') {
+              tempIdx++;
+            }
+          }
+        }
+      }
+
+      xml += `  <QUESTIONLIST>\n`;
+      for (let i = 1; i <= questionCount; i++) {
+        xml += `    <QUESTION id="q${i}" class="QUESTION_MULTIPLECHOICE"/>\n`;
+      }
+      xml += `  </QUESTIONLIST>\n`;
+
+      let questionIndex = 0;
+      while (true) {
+        // skip blank or mc lines
+        while (idx < lines.length &&
+          (lines[idx].trim() === '' ||
+            (lines[idx].toLowerCase().startsWith('mc') && lines[idx].substring(2).trim() === ''))) {
+          idx++;
+        }
+        if (idx >= lines.length) break;
+
+        questionIndex++;
+        let questionText = lines[idx].trim();
+        idx++;
+
+        xml += `  <QUESTION_MULTIPLECHOICE id="q${questionIndex}">\n`;
+        xml += writeTimeXml('    ');
+        xml += `    <BODY>\n`;
+        xml += `      <TEXT>${escapeXML(questionText)}</TEXT>\n`;
+        xml += `      <FLAGS value="true">\n`;
+        xml += `        <ISHTML value="true"/>\n`;
+        xml += `        <ISNEWLINELITERAL/>\n`;
+        xml += `      </FLAGS>\n`;
+        xml += `    </BODY>\n`;
+
+        let a = 0, correctAnswer = -1;
+        while (idx < lines.length && lines[idx].trim() !== '') {
+          a++;
+          let ans = lines[idx].trim();
+          idx++;
+          if (ans.startsWith('*')) {
+            ans = ans.substring(1);
+            correctAnswer = a;
+          }
+
+          xml += `    <ANSWER id="q${questionIndex}_a${a}" position="${a}">\n`;
+          xml += writeTimeXml('      ');
+          xml += `      <TEXT>${escapeXML(ans)}</TEXT>\n`;
+          xml += `    </ANSWER>\n`;
+        }
+
+        // skip blank lines
+        while (idx < lines.length && lines[idx].trim() === '') {
+          idx++;
+        }
+
+        xml += `    <GRADABLE>\n`;
+        xml += `      <FEEDBACK_WHEN_CORRECT>Good work</FEEDBACK_WHEN_CORRECT>\n`;
+        xml += `      <FEEDBACK_WHEN_INCORRECT>That's not correct</FEEDBACK_WHEN_INCORRECT>\n`;
+        xml += `      <CORRECTANSWER answer_id="q${questionIndex}_a${correctAnswer}"/>\n`;
+        xml += `    </GRADABLE>\n`;
+        xml += `  </QUESTION_MULTIPLECHOICE>\n`;
+
+        if (idx >= lines.length) break;
+      }
+      xml += `</POOL>\n`;
+      return xml;
+    }
+
+    function writeTimeXml(indent) {
+      const now = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+      return (
+        `${indent}<DATES>\n` +
+        `${indent}  <CREATED value="${now}"/>\n` +
+        `${indent}  <UPDATED value="${now}"/>\n` +
+        `${indent}</DATES>\n`
+      );
+    }
+
+    function escapeXML(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // =========== Save/Open Text File =============
+    function saveTextAsFile() {
+      const text = getCleanText();
+      if (!text) return;
+      const blob = new Blob([text], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = (quizNameInput.value.trim() || 'quiz') + '.txt';
+      a.click();
+    }
+
+    function openTextFile() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.txt';
+      input.addEventListener('change', () => {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          inputText.value = reader.result || '';
+          inputText.style.color = 'white';
+          updateUI();
+        };
+        reader.readAsText(file);
+      });
+      input.click();
+    }
+
+    function openInstructions() {
+      window.open("https://github.com/JaredTweed/TextToQuestionBankConverter#readme", "_blank");
+    }
+
+    // Initial UI
+    updateUI();
+  </script>
+</body>
+
+</html>
