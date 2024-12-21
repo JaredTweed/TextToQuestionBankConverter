@@ -18,7 +18,7 @@
     header,
     footer {
       background: #1d1e20;
-      padding: 10px;
+      padding: 10px 10px 10px 20px;
     }
 
     header {
@@ -205,10 +205,11 @@
       <!-- Editor area -->
       <div class="editor-container">
         <div class="editor-controls">
+          <span id="lineInfo" class="linenumbers">Line: 1<br>Qn: 1</span>
           <button onclick="saveTextAsFile()">Save Text</button>
           <button onclick="openTextFile()">Open Textfile</button>
-          <span id="lineInfo" class="linenumbers">Line: 1<br>Qn: 1</span>
-          <button id="createQB" onclick="convert()">Create Question Bank</button>
+
+          <button id="createQB" onclick="convert()">Create Blackboard/Moodle Question Bank</button>
         </div>
         <div class="text-container">
           <div class="highlight-layer" id="highlightLayer"></div>
