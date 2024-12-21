@@ -6,25 +6,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Text To Question Bank Converter</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <!-- Preload fonts -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" as="style"
+    onload="this.onload=null;this.rel='stylesheet'">
+
   <style>
     body {
       margin: 0;
       padding: 0;
       background: #222325;
       color: white;
-      font-family: 'Bahnschrift', sans-serif;
+    }
+
+    body * {
+      font-family: Poppins, Montserrat, Arial, sans-serif;
     }
 
     header,
     footer {
-      background: #1d1e20;
-      padding: 10px 10px 10px 20px;
-    }
-
-    header {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      background: #1d1e20;
+    }
+
+    footer {
+      padding: 10px 20px 10px 20px;
+    }
+
+    footer,
+    footer * {
+      color: white;
+      font-size: 10px;
+    }
+
+    header {
+      padding: 10px 10px 10px 20px;
+    }
+
+    #left-header {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #logo {
+      height: 30px;
+      border-radius: 6px;
     }
 
     header h1 {
@@ -34,7 +66,7 @@
 
     .main-wrapper {
       display: flex;
-      height: calc(100vh - 60px);
+      height: calc(100vh - 92px);
       /* room for header/footer if desired */
     }
 
@@ -64,7 +96,6 @@
       border: none;
       border-radius: 3px;
       font-size: 16px;
-      font-family: 'Bahnschrift', sans-serif;
     }
 
     .quizNameConstraints {
@@ -128,7 +159,6 @@
       bottom: 0;
       z-index: 0;
       pointer-events: none;
-      font-family: 'Bahnschrift', sans-serif;
       font-size: 15px;
       line-height: 1.2em;
       /* single spacing */
@@ -161,7 +191,6 @@
       width: 100%;
       height: 100%;
       font-size: 15px;
-      font-family: 'Bahnschrift', sans-serif;
       line-height: 1.2em;
       padding: 5px;
       box-sizing: border-box;
@@ -187,7 +216,10 @@
 <body>
 
   <header>
-    <h1>Text To Question Bank Converter</h1>
+    <div id="left-header">
+      <img id="logo" src="logo.png" alt="">
+      <h1>Text To Question Bank Converter</h1>
+    </div>
     <button onclick="openInstructions()">Help</button>
   </header>
 
@@ -224,7 +256,20 @@
     </div>
   </div>
 
-  <footer></footer>
+
+
+  <footer>
+    <div>
+      <a href="https://github.com/JaredTweed">github.com/JaredTweed</a>
+      - <a href="https://www.linkedin.com/in/jared-tweed/">linkedin.com/in/jared-tweed/</a>
+    </div>
+    <div>
+      <a
+        href="https://raw.githubusercontent.com/JaredTweed/TextToQuestionBankConverter/main/TextToQuestionBankConverter.exe">
+        Download For Windows
+      </a>
+    </div>
+  </footer>
 
   <!-- JSZip for zipping files -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
