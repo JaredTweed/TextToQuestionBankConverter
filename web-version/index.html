@@ -237,6 +237,21 @@
         min-width: 0;
       }
     }
+
+    @media screen and (max-width: 464px) {
+      /* #help {
+        display: none;
+      } */
+
+      .error-box {
+        min-height: 220px;
+        min-width: 0;
+      }
+
+      #windows-download {
+        display: none;
+      }
+    }
   </style>
 </head>
 
@@ -247,7 +262,7 @@
       <img id="logo" src="logo.png" alt="">
       <h1>Text To Question Bank Converter</h1>
     </div>
-    <button onclick="openInstructions()">Help</button>
+    <button id="help" onclick="openInstructions()">Help</button>
   </header>
 
   <div class="main-wrapper">
@@ -291,7 +306,7 @@
       - <a href="https://www.linkedin.com/in/jared-tweed/">linkedin.com/in/jared-tweed/</a>
     </div>
     <div>
-      <a
+      <a id="windows-download"
         href="https://raw.githubusercontent.com/JaredTweed/TextToQuestionBankConverter/main/TextToQuestionBankConverter.exe">
         Download For Windows
       </a>
