@@ -239,10 +239,6 @@
     }
 
     @media screen and (max-width: 464px) {
-      /* #help {
-        display: none;
-      } */
-
       .error-box {
         min-height: 220px;
         min-width: 0;
@@ -250,10 +246,6 @@
 
       #windows-download {
         display: none;
-      }
-
-      #createQB {
-        content: "Create Question Bank";
       }
     }
   </style>
@@ -320,6 +312,18 @@
   <!-- JSZip for zipping files -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script>
+    function updateButtonText() {
+      const createQBButton = document.getElementById('createQB');
+      if (window.innerWidth < 464) {
+        createQBButton.textContent = 'Create Question Bank';
+      } else {
+        createQBButton.textContent = 'Create Blackboard/Moodle Question Bank';
+      }
+    }
+    window.addEventListener('resize', updateButtonText);
+    updateButtonText(); // Initial check
+
+
     // Global
     let errorLineNumbers = [];
     let isReadyToConvert = false;
