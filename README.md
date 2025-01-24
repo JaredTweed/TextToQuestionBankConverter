@@ -20,6 +20,7 @@ C:/Users/jared/Documents/GithubProjects/TextToQuestionBankConverter/images
 ## 1) Download and open the TextToQuestionBankGuiConverter.exe file on your Windows computer. 
 
 To download the program, click [this link](https://raw.githubusercontent.com/JaredTweed/TextToQuestionBankConverter/main/TextToQuestionBankConverter.exe).  
+To use the program online, visit this website: https://jaredtweed.github.io/TextToQuestionBankOnline/. 
 
 ## 2) Format your multiple-choice questions
 Format them consistent with the following examples. Leave a blank line between questions. Mark the correct answer with an asterisk:  
